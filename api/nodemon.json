@@ -1,0 +1,16 @@
+{
+  "ignore": [
+    "test*.js",
+    "seed.js",
+    "clean-indexes.js",
+    "node_modules"
+  ],
+  "ext": "js",
+  "watch": [
+    "server.js",
+    "routes/",
+    "models/",
+    "middleware/",
+    "config/"
+  ]
+}

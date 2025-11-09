@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Kobarapide - Community Lending Platform" />
+    <meta name="theme-color" content="#D97706" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Kobarapide" />
+    <meta name="apple-mobile-web-app-icon" content="/icon-192x192.png" />
+    <link rel="apple-touch-icon" href="/icon-192x192.png" />
+    <link rel="icon" type="image/png" href="/icon-192x192.png" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <title>Kobarapide - Community Lending</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'koba-bg': '#2D2A26',
+              'koba-card': '#3a3632',
+              'koba-accent': '#D97706',
+              'koba-text': '#F3F4F6',
+            }
+          }
+        }
+      }
+    </script>
+    <script type="importmap">
+    {
+      "imports": {
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+        "react/": "https://aistudiocdn.com/react@^19.2.0/",
+        "react": "https://aistudiocdn.com/react@^19.2.0",
+        "recharts": "https://aistudiocdn.com/recharts@^2.12.7"
+      }
+    }
+    </script>
+</head>
+<body class="bg-koba-bg text-koba-text">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+      // Enregistrer le service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('✅ Service Worker enregistré:', registration);
+            })
+            .catch(error => {
+              console.error('❌ Erreur enregistrement Service Worker:', error);
+            });
+        });
+      }
+    </script>
+</body>
+</html>
