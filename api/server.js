@@ -1,36 +1,44 @@
-require('dotenv').config({ path: '.env.local' });
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
-// Connect to Database
-connectDB();
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
+const loanRoutes = require('./routes/loans');
+const adminRoutes = require('./routes/admin');
+const staffRoutes = require('./routes/staff');
+const duplicatesRoutes = require('./routes/duplicates');
+const waitingListRoutes = require('./routes/waiting-list');
 
 const app = express();
 
-// Init Middleware
+// Middleware
 app.use(cors());
-app.use(express.json({ extended: false }));
+app.use(express.json());
 
-// Define Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/loans', require('./routes/loans'));
-app.use('/api/admin', require('./routes/admin'));
-app.use('/api/staff', require('./routes/staff'));
-app.use('/api/waiting-list', require('./routes/waiting-list'));
-app.use('/api/duplicates', require('./routes/duplicates'));
+// Connect to MongoDB
+connectDB();
 
-// Simple route for testing
-app.get('/', (req, res) => res.send('API Kobarapide en cours d\'exécution'));
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/loans', loanRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/staff', staffRoutes);
+app.use('/api/duplicates', duplicatesRoutes);
+app.use('/api/waiting-list', waitingListRoutes);
+
+// Health check
+app.get('/', (req, res) => {
+  res.json({ message: 'API Kobarapide en cours d\'exécution' });
+});
 
 const PORT = process.env.PORT || 3001;
 
-// Vercel handles the listening part when deployed as a serverless function.
-// We only listen here for local development.
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(PORT, () => console.log(`Serveur local démarré sur le port ${PORT}`));
-}
+// Always listen, regardless of environment
+app.listen(PORT, () => {
+  console.log(`Serveur démarré sur le port ${PORT}`);
+});
 
-// Export the app for Vercel
+// Export for Vercel
 module.exports = app;
