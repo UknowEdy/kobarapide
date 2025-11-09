@@ -19,6 +19,8 @@ function AppContent() {
     return <HomePage />;
   }
 
+  const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'MODERATEUR'].includes(loggedInUser.role);
+
   return (
     <div className="min-h-screen bg-koba-bg">
       <header className="bg-koba-card shadow-lg py-4">
@@ -30,12 +32,7 @@ function AppContent() {
           </div>
         </div>
       </header>
-
-      {['ADMIN', 'SUPER_ADMIN', 'MODERATEUR'].includes(loggedInUser.role) ? (
-        <AdminDashboard />
-      ) : (
-        <ClientDashboard user={loggedInUser} />
-      )}
+      {isAdmin ? <AdminDashboard /> : <ClientDashboard user={loggedInUser} />}
     </div>
   );
 }
