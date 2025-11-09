@@ -43,59 +43,44 @@ Microfinance application built with modern web technologies.
 ## Installation
 
 ### Backend
-```bash
+\`\`\`bash
 cd api
 npm install
-```
+\`\`\`
 
 ### Frontend
-```bash
+\`\`\`bash
 cd frontend
 npm install
-```
+\`\`\`
 
 ## Configuration
 
-Create `.env.local` in the `api` folder:
-```
+Create \`.env.local\` in the \`api\` folder:
+\`\`\`
 MONGODB_URI=your_mongodb_uri
 JWT_SECRET=your_jwt_secret
 ADMIN_EMAIL=admin@kobarapide.com
 ADMIN_PASSWORD=your_password
-```
+\`\`\`
 
 ## Running
 
 ### Development
-```bash
+\`\`\`bash
 # Terminal 1: Backend
 cd api && npm run dev
 
 # Terminal 2: Frontend
 cd frontend && npm run dev
-```
+\`\`\`
 
 ### Testing
-```bash
+\`\`\`bash
 cd api
 npm run seed        # Seed database with mock data
 npm run test:final  # Run comprehensive tests
-```
-
-## Project Structure
-```
-kobarapide/
-├── api/                    # Backend
-│   ├── routes/            # API routes
-│   ├── models/            # Database models
-│   ├── middleware/        # Auth middleware
-│   └── server.js          # Express server
-├── frontend/              # React PWA
-│   ├── components/        # React components
-│   ├── public/            # Static assets + PWA files
-│   └── index.html         # PWA manifest link
-└── README.md
-```
+\`\`\`
 
 ## Database Models
 
@@ -106,12 +91,11 @@ kobarapide/
 
 ## API Routes
 
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - User login
-- `GET /api/users` - Get all users (admin)
-- `POST /api/loans` - Create loan request
-- `GET /api/duplicates` - Get potential duplicates
-- And more...
+- \`POST /api/auth/register\` - Register new user
+- \`POST /api/auth/login\` - User login
+- \`GET /api/users\` - Get all users (admin)
+- \`POST /api/loans\` - Create loan request
+- \`GET /api/duplicates\` - Get potential duplicates
 
 ## Testing & Quality
 
@@ -120,20 +104,9 @@ kobarapide/
 ✅ Zero critical errors
 ✅ Production-ready code
 
-## Deployment
-
-Ready for deployment on:
-- Vercel (Frontend)
-- Heroku or Railway (Backend)
-- MongoDB Atlas (Database)
-
 ## License
 
 MIT
-
-## Author
-
-@UknowEdy
 
 ---
 
