@@ -1,4 +1,3 @@
-import React from 'react';
 import { DataProvider, useAppContext } from './context/DataContext';
 import HomePage from './components/auth/HomePage';
 import ClientDashboard from './components/client/ClientDashboard';

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 interface User {
   _id: string;
@@ -23,7 +23,7 @@ const DataContext = createContext<DataContextType | null>(null);
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [isUpdating] = useState(false);
   const [loans] = useState([]);
 
   const API_URL = 'https://kobarapide.onrender.com';
@@ -43,7 +43,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.msg || 'Login failed');
       }
 
-      // Sauvegarder le token
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
