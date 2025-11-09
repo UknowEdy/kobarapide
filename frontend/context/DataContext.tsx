@@ -1,15 +1,69 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
-const DataContext = createContext<any>(null);
+interface User {
+  _id: string;
+  email: string;
+  nom: string;
+  prenom: string;
+  role: string;
+  telephone: string;
+}
+
+interface DataContextType {
+  loggedInUser: User | null;
+  loading: boolean;
+  isUpdating: boolean;
+  loans: any[];
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+}
+
+const DataContext = createContext<DataContextType | null>(null);
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const [loading] = React.useState(false);
-  const [isUpdating] = React.useState(false);
-  const [loans] = React.useState([]);
-  const [loggedInUser] = React.useState(null);
+  const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [loans] = useState([]);
+
+  const API_URL = 'https://kobarapide.onrender.com';
+
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.msg || 'Login failed');
+      }
+
+      // Sauvegarder le token
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      setLoggedInUser(data.user);
+    } catch (err: any) {
+      console.error('Login error:', err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setLoggedInUser(null);
+  };
 
   return (
-    <DataContext.Provider value={{ loading, isUpdating, loans, loggedInUser, logout: () => {} }}>
+    <DataContext.Provider value={{ loggedInUser, loading, isUpdating, loans, login, logout }}>
       {children}
     </DataContext.Provider>
   );
