@@ -1,0 +1,12 @@
+{
+  "build": {
+    "builder": "nixpacks",
+    "buildCommand": "cd api && npm install"
+  },
+  "deploy": {
+    "startCommand": "cd api && npm run start",
+    "healthcheckPath": "/",
+    "restartPolicyType": "on_failure",
+    "restartPolicyMaxRetries": 5
+  }
+}
