@@ -1,18 +1,21 @@
-# Environment variables
+# Environment variables - TRÈS IMPORTANT
 .env
 .env.local
-.env.*.local
+.env*.local
 .env.production.local
+api/.env.local
 
 # Dependencies
 node_modules/
+*/node_modules/
 package-lock.json
 yarn.lock
 
 # Build outputs
 dist/
 build/
-*.tsbuildinfo
+*/dist/
+*/build/
 
 # IDE
 .vscode/
@@ -21,10 +24,6 @@ build/
 *.swo
 *~
 .DS_Store
-
-# Testing
-coverage/
-.nyc_output/
 
 # Logs
 logs/
@@ -38,22 +37,15 @@ secrets.json
 .aws/
 .ssh/
 
-# Temporary files
+# Temporary & Test files
 tmp/
 temp/
 *.tmp
+test-duplicates*.js
+clean-indexes.js
 
 # OS
 Thumbs.db
-.DS_Store
 
 # Vite
 .vite/
-
-# Test files (optionnel)
-test-*.js
-*-debug.js
-clean-indexes.js
-
-# Files to keep public (note the ! before paths)
-!public/
