@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     buildCommand: cd api && npm install
-    startCommand: cd api && npm run start
+    startCommand: cd api && npm start
     envVars:
       - key: MONGODB_URI
         sync: false
