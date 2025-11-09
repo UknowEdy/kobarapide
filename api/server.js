@@ -24,9 +24,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/admin', adminRoutes);
+const clientsRoutes = require('./routes/clients');
 app.use('/api/staff', staffRoutes);
 app.use('/api/duplicates', duplicatesRoutes);
 app.use('/api/waiting-list', waitingListRoutes);
+app.use('/api/clients', clientsRoutes);
 
 // Health check
 app.get('/', (req, res) => {

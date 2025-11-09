@@ -20,8 +20,8 @@ const seedDatabase = async () => {
         const superAdmin = new User({
             email: process.env.ADMIN_EMAIL,
             password: process.env.ADMIN_PASSWORD,
-            nom: 'Kuku',
-            prenom: 'Edem',
+            nom: 'Uknow',
+            prenom: 'Edy',
             telephone: '0700000000',
             pieceIdentite: 'SUPER_ADMIN_001',
             dateDeNaissance: '1980-01-01',

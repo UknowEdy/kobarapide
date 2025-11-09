@@ -1,4 +1,3 @@
-import { fetchPOST } from '../utils/api';
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { User, LoanApplication, WaitingListItem, ClientStatus, LoanStatus, Role, PotentialDuplicate, DataContextType, CapacityConfig, Installment, InstallmentStatus } from '../types';
 
@@ -91,36 +90,19 @@ export const DataProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         }, 1500);
     }, []);
 
-    const login = useCallback(async (email: string, password: string): Promise<{ user: User | null; error?: string; reason?: string }> => {
-        try {
-            // Appeler le vrai backend
-            const result = await fetchPOST('/api/auth/login', { email, password });
+    const login = useCallback((email: string, password: string): { user: User | null; error?: string; reason?: string } => {
+        const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (!user) return { user: null, error: 'not_found' };
+        if (user.password !== password) return { user: null, error: 'wrong_password' };
 
-            if (!result.success) {
-                console.error('❌ Login failed:', result.error);
-                return { user: null, error: 'invalid_credentials' };
-            }
+        if (user.status === ClientStatus.REJETE) return { user: null, error: 'account_rejected', reason: user.rejectionReason };
+        if (!user.isEmailVerified) return { user: null, error: 'email_not_verified' };
+        
+        setLoggedInUser(user);
+        return { user };
+    }, [users]);
 
-            const { token, user } = result.data;
-
-            // Sauvegarder le token dans localStorage
-            localStorage.setItem('token', token);
-
-            // Sauvegarder l'utilisateur en state
-            setLoggedInUser(user);
-
-            console.log('✅ Login successful:', user.email);
-            return { user };
-        } catch (err) {
-            console.error('❌ Login error:', err);
-            return { user: null, error: 'server_error' };
-        }
-    }, []);
-
-    const logout = useCallback(() => {
-        localStorage.removeItem('token');
-        setLoggedInUser(null);
-    }, []);
+    const logout = useCallback(() => setLoggedInUser(null), []);
 
     const registerUser = useCallback((newUser: any): Promise<{ status: string; user?: User; message?: string }> => {
         return new Promise((resolve) => {

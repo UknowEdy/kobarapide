@@ -1,102 +1,238 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
 const auth = require('../middleware/authMiddleware');
-const superAdminAuth = require('../middleware/superAdminAuth');
+const mongoose = require('mongoose');
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
-// @route   POST api/staff
-// @desc    Add a staff member (SUPER_ADMIN only)
-// @access  Private (Super Admin)
-router.post('/', [auth, superAdminAuth], async (req, res) => {
-    const { email, password, nom, prenom, role } = req.body;
+// ====================================
+// MIDDLEWARE DE VÉRIFICATION DES RÔLES
+// ====================================
 
+const superAdminOnly = (req, res, next) => {
+    if (req.user.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ msg: 'Accès refusé. Seul SUPER_ADMIN peut accéder.' });
+    }
+    next();
+};
+
+const adminOrSuperAdmin = (req, res, next) => {
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ msg: 'Accès refusé. Seul ADMIN+ peut accéder.' });
+    }
+    next();
+};
+
+// ====================================
+// 1. CRÉER UN SUPER_ADMIN
+// ====================================
+router.post('/create-super-admin', [auth, superAdminOnly], async (req, res) => {
     try {
-        // Check if email already exists
+        const { email, password, nom, prenom, telephone, pieceIdentite, dateDeNaissance } = req.body;
+
+        if (!email || !password || !nom || !prenom) {
+            return res.status(400).json({ msg: 'Email, password, nom et prenom sont requis.' });
+        }
+
         let user = await User.findOne({ email });
         if (user) {
-            return res.status(400).json({ msg: 'Un utilisateur avec cet email existe déjà' });
+            return res.status(400).json({ msg: 'Un utilisateur avec cet email existe déjà.' });
         }
 
-        // Validate role
-        if (role !== 'ADMIN' && role !== 'MODERATEUR' && role !== 'SUPER_ADMIN') {
-            return res.status(400).json({ msg: 'Rôle invalide' });
-        }
-
-        // Create new staff member
         user = new User({
             email,
             password,
             nom,
             prenom,
-            telephone: 'N/A',
-            pieceIdentite: 'N/A',
-            dateDeNaissance: 'N/A',
-            role,
+            telephone: telephone || 'N/A',
+            pieceIdentite: pieceIdentite || 'N/A',
+            dateDeNaissance: dateDeNaissance || 'N/A',
+            role: 'SUPER_ADMIN',
             status: 'ACTIF',
             isEmailVerified: true,
             score: 99,
         });
 
         await user.save();
-        res.status(201).json({ msg: 'Membre du staff ajouté avec succès', user });
-
+        res.status(201).json({ msg: 'SUPER_ADMIN créé avec succès.', user });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Erreur du serveur');
     }
 });
 
-// @route   PUT api/staff/:id/role
-// @desc    Update staff member role (SUPER_ADMIN only)
-// @access  Private (Super Admin)
-router.put('/:id/role', [auth, superAdminAuth], async (req, res) => {
-    const { role } = req.body;
-
+// ====================================
+// 2. CRÉER UN ADMIN
+// ====================================
+router.post('/create-admin', [auth, superAdminOnly], async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
-        if (!user) {
-            return res.status(404).json({ msg: 'Utilisateur non trouvé' });
+        const { email, password, nom, prenom, telephone, pieceIdentite, dateDeNaissance } = req.body;
+
+        if (!email || !password || !nom || !prenom) {
+            return res.status(400).json({ msg: 'Email, password, nom et prenom sont requis.' });
         }
 
-        // Can't change role of another super admin unless you're the one
-        if (user.role === 'SUPER_ADMIN' && user._id.toString() !== req.user.id) {
-            return res.status(403).json({ msg: 'Vous ne pouvez pas modifier un Super Admin' });
+        let user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({ msg: 'Un utilisateur avec cet email existe déjà.' });
         }
 
-        // Validate new role
-        if (role !== 'ADMIN' && role !== 'MODERATEUR' && role !== 'SUPER_ADMIN') {
-            return res.status(400).json({ msg: 'Rôle invalide' });
-        }
+        user = new User({
+            email,
+            password,
+            nom,
+            prenom,
+            telephone: telephone || 'N/A',
+            pieceIdentite: pieceIdentite || 'N/A',
+            dateDeNaissance: dateDeNaissance || 'N/A',
+            role: 'ADMIN',
+            status: 'ACTIF',
+            isEmailVerified: true,
+            score: 99,
+        });
 
-        user.role = role;
         await user.save();
-        res.json({ msg: 'Rôle mis à jour', user });
-
+        res.status(201).json({ msg: 'ADMIN créé avec succès.', user });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Erreur du serveur');
     }
 });
 
-// @route   DELETE api/staff/:id
-// @desc    Delete a staff member (SUPER_ADMIN only)
-// @access  Private (Super Admin)
-router.delete('/:id', [auth, superAdminAuth], async (req, res) => {
+// ====================================
+// 3. CRÉER UN MODERATEUR
+// ====================================
+router.post('/create-moderateur', [auth, superAdminOnly], async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const { email, password, nom, prenom, telephone, pieceIdentite, dateDeNaissance } = req.body;
+
+        if (!email || !password || !nom || !prenom) {
+            return res.status(400).json({ msg: 'Email, password, nom et prenom sont requis.' });
+        }
+
+        let user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({ msg: 'Un utilisateur avec cet email existe déjà.' });
+        }
+
+        user = new User({
+            email,
+            password,
+            nom,
+            prenom,
+            telephone: telephone || 'N/A',
+            pieceIdentite: pieceIdentite || 'N/A',
+            dateDeNaissance: dateDeNaissance || 'N/A',
+            role: 'MODERATEUR',
+            status: 'ACTIF',
+            isEmailVerified: true,
+            score: 99,
+        });
+
+        await user.save();
+        res.status(201).json({ msg: 'MODERATEUR créé avec succès.', user });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Erreur du serveur');
+    }
+});
+
+// ====================================
+// 4. CRÉER UN CLIENT (SUPER_ADMIN + ADMIN)
+// ====================================
+router.post('/create-client', [auth, adminOrSuperAdmin], async (req, res) => {
+    try {
+        const { email, password, nom, prenom, telephone, pieceIdentite, dateDeNaissance } = req.body;
+
+        if (!email || !password || !nom || !prenom) {
+            return res.status(400).json({ msg: 'Email, password, nom et prenom sont requis.' });
+        }
+
+        let user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({ msg: 'Un utilisateur avec cet email existe déjà.' });
+        }
+
+        user = new User({
+            email,
+            password,
+            nom,
+            prenom,
+            telephone: telephone || 'N/A',
+            pieceIdentite: pieceIdentite || 'N/A',
+            dateDeNaissance: dateDeNaissance || 'N/A',
+            role: 'CLIENT',
+            status: 'EN_ATTENTE',
+            isEmailVerified: true,
+            score: 0,
+        });
+
+        await user.save();
+        res.status(201).json({ msg: 'CLIENT créé avec succès.', user });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Erreur du serveur');
+    }
+});
+
+// ====================================
+// 5. MODIFIER UN CLIENT (SUPER_ADMIN + ADMIN)
+// ====================================
+router.put('/clients/:id', [auth, adminOrSuperAdmin], async (req, res) => {
+    try {
+        const { status, nom, prenom, telephone } = req.body;
+        const userId = req.params.id;
+
+        let user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ msg: 'Utilisateur non trouvé' });
+            return res.status(404).json({ msg: 'Utilisateur non trouvé.' });
         }
 
-        // Prevent deletion of SUPER_ADMIN by themselves
-        if (user._id.toString() === req.user.id) {
-            return res.status(403).json({ msg: 'Vous ne pouvez pas vous supprimer vous-même' });
+        if (user.role !== 'CLIENT') {
+            return res.status(403).json({ msg: 'Vous ne pouvez modifier que les CLIENTs.' });
         }
 
-        await User.findByIdAndDelete(req.params.id);
-        res.json({ msg: 'Membre du staff supprimé avec succès' });
+        if (nom) user.nom = nom;
+        if (prenom) user.prenom = prenom;
+        if (telephone) user.telephone = telephone;
+        if (status) user.status = status;
 
+        await user.save();
+        res.json({ msg: 'CLIENT modifié avec succès.', user });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Erreur du serveur');
+    }
+});
+
+// ====================================
+// 6. MODIFIER UN STAFF (SUPER_ADMIN only)
+// ====================================
+router.put('/:id', [auth, superAdminOnly], async (req, res) => {
+    try {
+        const { status } = req.body;
+        const userId = req.params.id;
+
+        if (!['ACTIF', 'SUSPENDU', 'BLOQUE'].includes(status)) {
+            return res.status(400).json({ msg: 'Status invalide. Doit être ACTIF, SUSPENDU ou BLOQUE.' });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ msg: "ID invalide." });
+        }
+        let user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ msg: 'Utilisateur non trouvé.' });
+        }
+
+        if (!['ADMIN', 'MODERATEUR', 'SUPER_ADMIN'].includes(user.role)) {
+            return res.status(403).json({ msg: 'Vous ne pouvez modifier que les STAFF.' });
+        }
+
+        user.status = status;
+        await user.save();
+
+        res.json({ msg: `STAFF modifié avec succès. Status: ${status}`, user });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Erreur du serveur');

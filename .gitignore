@@ -49,3 +49,6 @@ Thumbs.db
 
 # Vite
 .vite/
+
+# Local context file
+CONTEXT.md
