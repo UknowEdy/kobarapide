@@ -11,3 +11,9 @@ export const CLIENT_STATUS = {
   INACTIVE: 'INACTIVE',
   SUSPENDED: 'SUSPENDED'
 };
+
+export const CLIENT_STATUS_CONFIG = {
+  ACTIVE: { label: 'Actif', color: 'green' },
+  INACTIVE: { label: 'Inactif', color: 'gray' },
+  SUSPENDED: { label: 'Suspendu', color: 'red' }
+};
