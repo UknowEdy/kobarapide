@@ -1,77 +1,241 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAppContext } from '../../context/DataContext';
 import LoadingSpinner from '../shared/LoadingSpinner';
 
 export default function HomePage() {
   const { login, loading } = useAppContext();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  
+  // Login
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  // Register
+  const [registerEmail, setRegisterEmail] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [registerNom, setRegisterNom] = useState('');
+  const [registerPrenom, setRegisterPrenom] = useState('');
+  const [registerTel, setRegisterTel] = useState('');
+  const [registerPiece, setRegisterPiece] = useState('');
+  const [registerDate, setRegisterDate] = useState('');
+  const [registerError, setRegisterError] = useState('');
+  const [registerSuccess, setRegisterSuccess] = useState('');
+
+  const handleLogin = async (e: any) => {
     e.preventDefault();
-    setError('');
+    setLoginError('');
+    try {
+      await login(loginEmail, loginPassword);
+    } catch (err: any) {
+      setLoginError(err.message || 'Login failed');
+    }
+  };
+
+  const handleRegister = async (e: any) => {
+    e.preventDefault();
+    setRegisterError('');
+    setRegisterSuccess('');
 
     try {
-      await login(email, password);
+      const response = await fetch('https://kobarapide.onrender.com/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: registerEmail,
+          password: registerPassword,
+          nom: registerNom,
+          prenom: registerPrenom,
+          telephone: registerTel,
+          pieceIdentite: registerPiece,
+          dateDeNaissance: registerDate
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.msg || 'Registration failed');
+      }
+
+      setRegisterSuccess('✅ Inscription réussie ! Veuillez vous connecter.');
+      setRegisterEmail('');
+      setRegisterPassword('');
+      setRegisterNom('');
+      setRegisterPrenom('');
+      setRegisterTel('');
+      setRegisterPiece('');
+      setRegisterDate('');
     } catch (err: any) {
-      setError(err.message || 'Login failed');
+      setRegisterError(err.message || 'Registration failed');
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-koba-bg px-4">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-koba-bg px-4 py-8">
       <img src="/icon-192x192.png" alt="Kobarapide" className="w-24 h-24 mb-8" />
-      
       <h1 className="text-4xl font-bold text-koba-accent mb-2">Kobarapide</h1>
       <p className="text-koba-text text-lg mb-12">Community Lending Platform</p>
 
-      <div className="w-full max-w-md bg-koba-card p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-koba-accent mb-6">Connexion</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+        
+        {/* LOGIN */}
+        <div className="bg-koba-card p-8 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-koba-accent mb-6">Connexion</h2>
 
-        {error && (
-          <div className="bg-red-600 text-white p-3 rounded mb-4">
-            {error}
-          </div>
-        )}
+          {loginError && (
+            <div className="bg-red-600 text-white p-3 rounded mb-4">
+              {loginError}
+            </div>
+          )}
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-koba-text mb-2">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="edemkukuz@gmail.com"
-              className="w-full p-3 bg-koba-bg text-koba-text rounded border border-koba-accent"
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-koba-text mb-2">Email</label>
+              <input
+                type="email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                placeholder="votre@email.com"
+                className="w-full p-3 bg-koba-bg text-koba-text rounded border border-koba-accent"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label className="block text-koba-text mb-2">Mot de passe</label>
+              <input
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                placeholder="Votre mot de passe"
+                className="w-full p-3 bg-koba-bg text-koba-text rounded border border-koba-accent"
+                disabled={loading}
+              />
+            </div>
+
+            <button
+              type="submit"
               disabled={loading}
-            />
-          </div>
+              className="w-full bg-koba-accent text-koba-bg font-bold py-3 rounded hover:opacity-80 disabled:opacity-50 flex justify-center items-center"
+            >
+              {loading ? <LoadingSpinner /> : 'Se connecter'}
+            </button>
+          </form>
 
-          <div>
-            <label className="block text-koba-text mb-2">Mot de passe</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Votre mot de passe"
-              className="w-full p-3 bg-koba-bg text-koba-text rounded border border-koba-accent"
-              disabled={loading}
-            />
-          </div>
+          <p className="text-gray-400 text-xs mt-4 text-center">
+            Test: edemkukuz@gmail.com
+          </p>
+        </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-koba-accent text-koba-bg font-bold py-3 rounded hover:opacity-80 disabled:opacity-50"
-          >
-            {loading ? <LoadingSpinner /> : 'Se connecter'}
-          </button>
-        </form>
+        {/* REGISTER */}
+        <div className="bg-koba-card p-8 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-koba-accent mb-6">Inscription</h2>
 
-        <p className="text-gray-400 text-sm mt-6 text-center">
-          Test: edemkukuz@gmail.com
-        </p>
+          {registerError && (
+            <div className="bg-red-600 text-white p-3 rounded mb-4 text-sm">
+              {registerError}
+            </div>
+          )}
+
+          {registerSuccess && (
+            <div className="bg-green-600 text-white p-3 rounded mb-4 text-sm">
+              {registerSuccess}
+            </div>
+          )}
+
+          <form onSubmit={handleRegister} className="space-y-3 max-h-96 overflow-y-auto">
+            <div>
+              <label className="block text-koba-text mb-1 text-sm">Email</label>
+              <input
+                type="email"
+                value={registerEmail}
+                onChange={(e) => setRegisterEmail(e.target.value)}
+                placeholder="votre@email.com"
+                className="w-full p-2 bg-koba-bg text-koba-text rounded border border-koba-accent text-sm"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-koba-text mb-1 text-sm">Mot de passe</label>
+              <input
+                type="password"
+                value={registerPassword}
+                onChange={(e) => setRegisterPassword(e.target.value)}
+                placeholder="Mot de passe"
+                className="w-full p-2 bg-koba-bg text-koba-text rounded border border-koba-accent text-sm"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-koba-text mb-1 text-sm">Nom</label>
+              <input
+                type="text"
+                value={registerNom}
+                onChange={(e) => setRegisterNom(e.target.value)}
+                placeholder="Votre nom"
+                className="w-full p-2 bg-koba-bg text-koba-text rounded border border-koba-accent text-sm"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-koba-text mb-1 text-sm">Prénom</label>
+              <input
+                type="text"
+                value={registerPrenom}
+                onChange={(e) => setRegisterPrenom(e.target.value)}
+                placeholder="Votre prénom"
+                className="w-full p-2 bg-koba-bg text-koba-text rounded border border-koba-accent text-sm"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-koba-text mb-1 text-sm">Téléphone</label>
+              <input
+                type="tel"
+                value={registerTel}
+                onChange={(e) => setRegisterTel(e.target.value)}
+                placeholder="06XXXXXXXX"
+                className="w-full p-2 bg-koba-bg text-koba-text rounded border border-koba-accent text-sm"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-koba-text mb-1 text-sm">Pièce d'identité</label>
+              <input
+                type="text"
+                value={registerPiece}
+                onChange={(e) => setRegisterPiece(e.target.value)}
+                placeholder="Numéro de pièce"
+                className="w-full p-2 bg-koba-bg text-koba-text rounded border border-koba-accent text-sm"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-koba-text mb-1 text-sm">Date de naissance</label>
+              <input
+                type="date"
+                value={registerDate}
+                onChange={(e) => setRegisterDate(e.target.value)}
+                className="w-full p-2 bg-koba-bg text-koba-text rounded border border-koba-accent text-sm"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-koba-accent text-koba-bg font-bold py-2 rounded hover:opacity-80 text-sm mt-4"
+            >
+              S'inscrire
+            </button>
+          </form>
+        </div>
+
       </div>
     </div>
   );
