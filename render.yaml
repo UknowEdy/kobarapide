@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: kobarapide-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd api && npm install
+    startCommand: cd api && npm run start
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: NODE_ENV
+        value: production
