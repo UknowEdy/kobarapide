@@ -1,20 +1,44 @@
-import { useState } from 'react';
-import { useAppContext } from '../../context/DataContext';
+import React, { useState, useEffect } from 'react';
+import { fetchGET, logout, getCurrentUser } from '../../utils/api';
+import StatsSection from './sections/StatsSection';
+import ClientsSection from './sections/ClientsSection';
+import LoansSection from './sections/LoansSection';
+import WaitingListSection from './sections/WaitingListSection';
+import DuplicatesSection from './sections/DuplicatesSection';
+import StaffSection from './sections/StaffSection';
+import ListStaffSection from './sections/ListStaffSection';
+import SettingsSection from './sections/SettingsSection';
+
+type TabType = 'dashboard' | 'clients' | 'loans' | 'waiting' | 'duplicates' | 'staff' | 'liststaff' | 'settings';
 
 export default function AdminDashboard() {
-  const { logout } = useAppContext();
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [darkMode, setDarkMode] = useState(true);
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({ totalClients: 0, activeLoans: 0, pendingLoans: 0, duplicates: 0 });
+  const user = getCurrentUser();
 
   const tabs = [
     { id: 'dashboard', label: '📊 Tableau de bord' },
     { id: 'clients', label: '👥 Clients' },
     { id: 'loans', label: '💰 Prêts' },
-    { id: 'waiting', label: '⏳ Liste d\'attente' },
+    { id: 'waiting', label: '⏳ Listes d\'attente' },
     { id: 'duplicates', label: '🔍 Doublons' },
-    { id: 'staff', label: '👔 Staff' },
+    { id: 'staff', label: '👔 Gérer Staff' },
+    { id: 'liststaff', label: '👥 Liste Staff' },
     { id: 'settings', label: '⚙️ Paramètres' }
   ];
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    setLoading(true);
+    const res = await fetchGET('/api/admin/stats');
+    if (res.success) setStats(res.data);
+    setLoading(false);
+  };
 
   const handleLogout = () => {
     if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
@@ -25,189 +49,59 @@ export default function AdminDashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return (
-          <div className="p-8">
-            <h2 className="text-3xl font-bold text-koba-accent mb-6">📊 Tableau de bord</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-koba-card p-6 rounded-lg border-l-4 border-koba-accent">
-                <p className="text-gray-400 text-sm">Total Clients</p>
-                <p className="text-3xl font-bold text-koba-accent">500</p>
-              </div>
-              <div className="bg-koba-card p-6 rounded-lg border-l-4 border-green-500">
-                <p className="text-gray-400 text-sm">Prêts Actifs</p>
-                <p className="text-3xl font-bold text-green-500">45</p>
-              </div>
-              <div className="bg-koba-card p-6 rounded-lg border-l-4 border-blue-500">
-                <p className="text-gray-400 text-sm">En Attente</p>
-                <p className="text-3xl font-bold text-blue-500">12</p>
-              </div>
-              <div className="bg-koba-card p-6 rounded-lg border-l-4 border-red-500">
-                <p className="text-gray-400 text-sm">Doublons</p>
-                <p className="text-3xl font-bold text-red-500">8</p>
-              </div>
-            </div>
-          </div>
-        );
-
+        return <StatsSection stats={stats} />;
       case 'clients':
-        return (
-          <div className="p-8">
-            <h2 className="text-3xl font-bold text-koba-accent mb-6">👥 Gestion des Clients</h2>
-            <div className="bg-koba-card p-6 rounded-lg">
-              <p className="text-koba-text">Liste des clients avec score de crédit, statut, etc.</p>
-              <div className="mt-4 space-y-2">
-                <div className="bg-koba-bg p-3 rounded flex justify-between">
-                  <span>Client 1 - Score: 8/10</span>
-                  <span className="text-green-500">✓ Actif</span>
-                </div>
-                <div className="bg-koba-bg p-3 rounded flex justify-between">
-                  <span>Client 2 - Score: 5/10</span>
-                  <span className="text-yellow-500">⚠ En attente</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
+        return <ClientsSection />;
       case 'loans':
-        return (
-          <div className="p-8">
-            <h2 className="text-3xl font-bold text-koba-accent mb-6">💰 Gestion des Prêts</h2>
-            <div className="bg-koba-card p-6 rounded-lg">
-              <p className="text-koba-text">Liste de tous les prêts avec statuts et montants</p>
-              <div className="mt-4 space-y-2">
-                <div className="bg-koba-bg p-3 rounded flex justify-between">
-                  <span>Prêt #001 - 50,000 CFA</span>
-                  <span className="text-green-500">Approuvé</span>
-                </div>
-                <div className="bg-koba-bg p-3 rounded flex justify-between">
-                  <span>Prêt #002 - 30,000 CFA</span>
-                  <span className="text-blue-500">En cours</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
+        return <LoansSection />;
       case 'waiting':
-        return (
-          <div className="p-8">
-            <h2 className="text-3xl font-bold text-koba-accent mb-6">⏳ Liste d'attente</h2>
-            <div className="bg-koba-card p-6 rounded-lg">
-              <p className="text-koba-text">Clients en attente d'approbation</p>
-              <div className="mt-4 space-y-2">
-                <div className="bg-koba-bg p-3 rounded">
-                  <p className="font-bold">Jean Dupont</p>
-                  <p className="text-sm text-gray-400">En attente depuis 2 jours</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
+        return <WaitingListSection />;
       case 'duplicates':
-        return (
-          <div className="p-8">
-            <h2 className="text-3xl font-bold text-koba-accent mb-6">🔍 Détection des Doublons</h2>
-            <div className="bg-koba-card p-6 rounded-lg">
-              <p className="text-koba-text">Doublons potentiels (email, téléphone, identité)</p>
-              <div className="mt-4 space-y-2">
-                <div className="bg-red-900/20 p-3 rounded border border-red-500">
-                  <p className="font-bold text-red-400">⚠️ Doublon détecté</p>
-                  <p className="text-sm">Même email: client@example.com</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
+        return <DuplicatesSection />;
       case 'staff':
-        return (
-          <div className="p-8">
-            <h2 className="text-3xl font-bold text-koba-accent mb-6">👔 Gestion du Staff</h2>
-            <div className="bg-koba-card p-6 rounded-lg">
-              <button className="bg-koba-accent text-koba-bg px-4 py-2 rounded mb-4 font-bold hover:opacity-80">
-                + Ajouter un staff
-              </button>
-              <div className="space-y-2">
-                <div className="bg-koba-bg p-3 rounded flex justify-between">
-                  <span>Admin 1 - Jean</span>
-                  <span className="text-blue-500">Admin</span>
-                </div>
-                <div className="bg-koba-bg p-3 rounded flex justify-between">
-                  <span>Modérateur 1 - Marie</span>
-                  <span className="text-yellow-500">Modérateur</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
+        return <StaffSection />;
+      case 'liststaff':
+        return <ListStaffSection />;
       case 'settings':
-        return (
-          <div className="p-8">
-            <h2 className="text-3xl font-bold text-koba-accent mb-6">⚙️ Paramètres</h2>
-            <div className="bg-koba-card p-6 rounded-lg space-y-4">
-              <div>
-                <label className="block text-koba-text mb-2">Score de crédit minimum</label>
-                <input type="number" defaultValue="3" className="w-full p-2 bg-koba-bg text-koba-text rounded border border-koba-accent" />
-              </div>
-              <div>
-                <label className="block text-koba-text mb-2">Montant minimum de prêt</label>
-                <input type="number" defaultValue="10000" className="w-full p-2 bg-koba-bg text-koba-text rounded border border-koba-accent" />
-              </div>
-              <button className="bg-koba-accent text-koba-bg px-6 py-2 rounded font-bold hover:opacity-80">
-                Sauvegarder
-              </button>
-            </div>
-          </div>
-        );
-
+        return <SettingsSection />;
       default:
         return null;
     }
   };
 
   return (
-    <div className={darkMode ? 'bg-koba-bg text-koba-text' : 'bg-gray-100 text-gray-900'}>
+    <div className={darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}>
       {/* HEADER */}
-      <header className={`${darkMode ? 'bg-koba-card' : 'bg-white'} shadow-lg py-4 px-6 flex justify-between items-center`}>
+      <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg py-4 px-8 flex justify-between items-center border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         <div className="flex items-center gap-4">
-          <img src="/icon-192x192.png" alt="Kobarapide" className="w-16 h-16" />
-          <h1 className={`text-3xl font-bold ${darkMode ? 'text-koba-accent' : 'text-koba-accent'}`}>Kobarapide</h1>
+          <img src="/icon-192x192.png" alt="Kobarapide" className="w-12 h-12" />
+          <h1 className="text-2xl font-bold text-orange-500">Admin Kobarapide</h1>
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className={`p-2 rounded ${darkMode ? 'bg-koba-bg text-yellow-400' : 'bg-gray-300 text-gray-900'}`}
-          >
-            {darkMode ? '🌙' : '☀️'}
-          </button>
+        <div className="flex items-center gap-6">
+          <div className="text-right">
+            <p className="text-sm font-semibold">Connecté en tant que: <span className="text-orange-500">{user?.role || 'ADMIN'}</span></p>
+            <p className="text-xs text-gray-400">{user?.email || 'admin@kobarapide.com'}</p>
+          </div>
 
-          {/* Logout Button */}
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 text-white px-4 py-2 rounded font-bold hover:bg-red-700"
-          >
-            Se déconnecter
+          <button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold transition">
+            Déconnexion
           </button>
         </div>
       </header>
 
-      {/* NAVIGATION TABS */}
-      <nav className={`${darkMode ? 'bg-koba-card' : 'bg-white'} border-b ${darkMode ? 'border-gray-700' : 'border-gray-300'} px-6 py-4 flex gap-4 overflow-x-auto`}>
+      {/* NAVIGATION */}
+      <nav className={`${darkMode ? 'bg-gray-800' : 'bg-white'} border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} px-8 py-4 flex gap-2 overflow-x-auto scrollbar-hide`}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded font-bold whitespace-nowrap transition-all ${
+            onClick={() => setActiveTab(tab.id as TabType)}
+            className={`px-4 py-2 rounded font-semibold whitespace-nowrap transition-all ${
               activeTab === tab.id
-                ? 'bg-koba-accent text-koba-bg'
+                ? 'bg-orange-500 text-white'
                 : darkMode
-                ? 'bg-koba-bg text-koba-text hover:bg-gray-700'
-                : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+                ? 'text-gray-300 hover:bg-gray-700'
+                : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
             {tab.label}
@@ -216,9 +110,15 @@ export default function AdminDashboard() {
       </nav>
 
       {/* CONTENT */}
-      <div className={darkMode ? 'bg-koba-bg' : 'bg-gray-100'}>
-        {renderContent()}
-      </div>
+      <main className={`${darkMode ? 'bg-gray-900' : 'bg-gray-50'} min-h-screen p-8`}>
+        {loading && activeTab === 'dashboard' ? (
+          <div className="flex items-center justify-center h-96">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+          </div>
+        ) : (
+          renderContent()
+        )}
+      </main>
     </div>
   );
 }

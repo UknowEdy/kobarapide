@@ -39,11 +39,13 @@ export default function HomePage() {
     setRegisterError('');
     setRegisterSuccess('');
 
+    // Verifica che le password coincidano
     if (registerPassword !== registerPasswordConfirm) {
       setRegisterError('❌ Les mots de passe ne correspondent pas');
       return;
     }
 
+    // Verifica lunghezza minima
     if (registerPassword.length < 6) {
       setRegisterError('❌ Le mot de passe doit contenir au moins 6 caractères');
       return;
@@ -71,6 +73,7 @@ export default function HomePage() {
       }
 
       setRegisterSuccess('✅ Inscription réussie ! Veuillez vous connecter.');
+      // Reset tutti i campi
       setRegisterEmail('');
       setRegisterPassword('');
       setRegisterPasswordConfirm('');
@@ -92,6 +95,7 @@ export default function HomePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
         
+        {/* LOGIN */}
         <div className="bg-koba-card p-8 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-koba-accent mb-6">Connexion</h2>
 
@@ -142,6 +146,7 @@ export default function HomePage() {
           </p>
         </div>
 
+        {/* REGISTER */}
         <div className="bg-koba-card p-8 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-koba-accent mb-6">Inscription</h2>
 
