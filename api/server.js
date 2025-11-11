@@ -1,7 +1,7 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
-
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const loanRoutes = require('./routes/loans');
@@ -20,27 +20,20 @@ app.use(express.json());
 connectDB();
 
 // Routes
+app.get('/', (req, res) => {
+    res.json({ message: "API Kobarapide en cours d'exécution" });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/admin', adminRoutes);
-const clientsRoutes = require('./routes/clients');
 app.use('/api/staff', staffRoutes);
 app.use('/api/duplicates', duplicatesRoutes);
 app.use('/api/waiting-list', waitingListRoutes);
-app.use('/api/clients', clientsRoutes);
-
-// Health check
-app.get('/', (req, res) => {
-  res.json({ message: 'API Kobarapide en cours d\'exécution' });
-});
 
 const PORT = process.env.PORT || 3001;
 
-// Always listen, regardless of environment
 app.listen(PORT, () => {
-  console.log(`Serveur démarré sur le port ${PORT}`);
+    console.log(`Serveur démarré sur le port ${PORT}`);
 });
-
-// Export for Vercel
-module.exports = app;
