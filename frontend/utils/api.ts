@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://kobarapide.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://kobarapide.onrender.com';
 
 export const fetchGET = async (endpoint) => {
   const token = localStorage.getItem('token');

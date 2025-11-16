@@ -71,7 +71,7 @@ const StaffSection: React.FC = () => {
       setShowForm(false);
       loadStaff(); // Recharger la liste
     } else {
-      setError(res.msg || 'Erreur lors de la création');
+      setError(res.error || 'Erreur lors de la création');
     }
   };
 
