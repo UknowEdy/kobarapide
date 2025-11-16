@@ -1,13 +1,5 @@
 import { createContext, useContext, useState } from 'react';
-
-interface User {
-  _id: string;
-  email: string;
-  nom: string;
-  prenom: string;
-  role: string;
-  telephone: string;
-}
+import { User } from '../types';
 
 interface DataContextType {
   loggedInUser: User | null;

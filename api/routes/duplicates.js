@@ -13,12 +13,17 @@ const adminAuth = (req, res, next) => {
 };
 
 // @route   GET api/duplicates
-// @desc    Get all potential duplicates with status = pending
+// @desc    Get all potential duplicates (with optional status filter)
 // @access  Private (Admin)
 router.get('/', [auth, adminAuth], async (req, res) => {
     try {
-        const duplicates = await PotentialDuplicate.find({ status: 'pending' })
-            .populate('existingUser', ['prenom', 'nom', 'email', 'photoUrl']);
+        const { status } = req.query;
+        const query = status ? { status } : { status: 'pending' };
+
+        const duplicates = await PotentialDuplicate.find(query)
+            .populate('existingUser', ['prenom', 'nom', 'email', 'telephone', 'pieceIdentite', 'dateDeNaissance'])
+            .sort({ createdAt: -1 });
+
         res.json(duplicates);
     } catch (err) {
         console.error(err.message);
@@ -26,16 +31,16 @@ router.get('/', [auth, adminAuth], async (req, res) => {
     }
 });
 
-// @route   POST api/duplicates/:id/resolve
+// @route   POST api/duplicates/resolve
 // @desc    Resolve a duplicate (approve or reject)
 // @access  Private (Admin)
-router.post('/:id/resolve', [auth, adminAuth], async (req, res) => {
-    const { action, reason } = req.body;
+router.post('/resolve', [auth, adminAuth], async (req, res) => {
+    const { newUserEmail, action, reason } = req.body;
 
     try {
-        const duplicate = await PotentialDuplicate.findById(req.params.id);
+        const duplicate = await PotentialDuplicate.findOne({ 'newUser.email': newUserEmail, status: 'pending' });
         if (!duplicate) {
-            return res.status(404).json({ msg: 'Doublon non trouvé' });
+            return res.status(404).json({ msg: 'Doublon non trouvé ou déjà résolu' });
         }
 
         if (action === 'approve') {

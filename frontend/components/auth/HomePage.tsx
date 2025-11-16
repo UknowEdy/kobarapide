@@ -126,6 +126,14 @@ export default function HomePage() {
                 disabled={loading}
                 required
               />
+              <div className="text-right mt-2">
+                <a
+                  href="/forgot-password"
+                  className="text-koba-accent text-sm hover:underline"
+                >
+                  Mot de passe oublié ?
+                </a>
+              </div>
             </div>
 
             <button

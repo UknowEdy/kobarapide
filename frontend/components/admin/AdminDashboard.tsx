@@ -1,44 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { fetchGET, logout, getCurrentUser } from '../../utils/api';
+import { useState } from 'react';
+import { logout, getCurrentUser } from '../../utils/api';
 import StatsSection from './sections/StatsSection';
 import ClientsSection from './sections/ClientsSection';
 import LoansSection from './sections/LoansSection';
 import WaitingListSection from './sections/WaitingListSection';
 import DuplicatesSection from './sections/DuplicatesSection';
 import StaffSection from './sections/StaffSection';
-import ListStaffSection from './sections/ListStaffSection';
 import SettingsSection from './sections/SettingsSection';
 
-type TabType = 'dashboard' | 'clients' | 'loans' | 'waiting' | 'duplicates' | 'staff' | 'liststaff' | 'settings';
+type TabType = 'dashboard' | 'clients' | 'loans' | 'waiting' | 'duplicates' | 'staff' | 'settings';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [darkMode, setDarkMode] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState({ totalClients: 0, activeLoans: 0, pendingLoans: 0, duplicates: 0 });
   const user = getCurrentUser();
 
   const tabs = [
     { id: 'dashboard', label: '📊 Tableau de bord' },
     { id: 'clients', label: '👥 Clients' },
     { id: 'loans', label: '💰 Prêts' },
-    { id: 'waiting', label: '⏳ Listes d\'attente' },
+    { id: 'waiting', label: '⏳ Liste d\'attente' },
     { id: 'duplicates', label: '🔍 Doublons' },
-    { id: 'staff', label: '👔 Gérer Staff' },
-    { id: 'liststaff', label: '👥 Liste Staff' },
+    { id: 'staff', label: '👔 Personnel' },
     { id: 'settings', label: '⚙️ Paramètres' }
   ];
-
-  useEffect(() => {
-    loadStats();
-  }, []);
-
-  const loadStats = async () => {
-    setLoading(true);
-    const res = await fetchGET('/api/admin/stats');
-    if (res.success) setStats(res.data);
-    setLoading(false);
-  };
 
   const handleLogout = () => {
     if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
@@ -49,7 +34,7 @@ export default function AdminDashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <StatsSection stats={stats} />;
+        return <StatsSection />;
       case 'clients':
         return <ClientsSection />;
       case 'loans':
@@ -60,8 +45,6 @@ export default function AdminDashboard() {
         return <DuplicatesSection />;
       case 'staff':
         return <StaffSection />;
-      case 'liststaff':
-        return <ListStaffSection />;
       case 'settings':
         return <SettingsSection />;
       default:
@@ -111,13 +94,7 @@ export default function AdminDashboard() {
 
       {/* CONTENT */}
       <main className={`${darkMode ? 'bg-gray-900' : 'bg-gray-50'} min-h-screen p-8`}>
-        {loading && activeTab === 'dashboard' ? (
-          <div className="flex items-center justify-center h-96">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
-          </div>
-        ) : (
-          renderContent()
-        )}
+        {renderContent()}
       </main>
     </div>
   );

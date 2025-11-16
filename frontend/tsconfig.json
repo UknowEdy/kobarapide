@@ -16,6 +16,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["index.tsx", "App.tsx", "components", "context", "types.ts"],
+  "include": ["index.tsx", "App.tsx", "components", "context", "types.ts", "utils", "vite-env.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

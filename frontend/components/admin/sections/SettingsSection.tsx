@@ -1,10 +1,20 @@
-import React from 'react';
 import { logout } from '../../../utils/api';
+import CapacitySettings from './CapacitySettings';
+
 const SettingsSection = () => {
   return (
-    <div className="bg-gray-800 p-6 rounded">
-      <h3 className="text-xl font-bold mb-4">Paramètres</h3>
-      <button onClick={() => logout()} className="px-4 py-2 bg-red-600 text-white rounded">Déconnexion</button>
+    <div className="space-y-6">
+      <CapacitySettings />
+
+      <div className="bg-koba-card p-6 rounded-lg">
+        <h3 className="text-xl font-bold text-koba-accent mb-4">Compte</h3>
+        <button
+          onClick={() => logout()}
+          className="px-6 py-3 bg-red-600 text-white rounded hover:bg-red-700 font-semibold"
+        >
+          Déconnexion
+        </button>
+      </div>
     </div>
   );
 };
