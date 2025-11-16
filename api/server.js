@@ -9,6 +9,7 @@ const adminRoutes = require('./routes/admin');
 const staffRoutes = require('./routes/staff');
 const duplicatesRoutes = require('./routes/duplicates');
 const waitingListRoutes = require('./routes/waiting-list');
+const capacityRoutes = require('./routes/capacity');
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/duplicates', duplicatesRoutes);
 app.use('/api/waiting-list', waitingListRoutes);
+app.use('/api/capacity', capacityRoutes);
 
 const PORT = process.env.PORT || 3001;
 

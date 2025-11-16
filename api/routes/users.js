@@ -12,10 +12,10 @@ const adminAuth = (req, res, next) => {
 
 router.get('/', [auth, adminAuth], async (req, res) => {
     try {
-        const { role, statut } = req.query;
+        const { role, status } = req.query;
         const filter = {};
         if (role) filter.role = role;
-        if (statut) filter.statut = statut;
+        if (status) filter.status = status;
         const users = await User.find(filter).select('-password');
         res.json(users);
     } catch (err) {
@@ -31,6 +31,50 @@ router.put('/:id/status', [auth, adminAuth], async (req, res) => {
         await user.save();
         res.json(user);
     } catch (err) {
+        res.status(500).send('Erreur serveur');
+    }
+});
+
+// @route   PUT /api/users/:id
+// @desc    Met à jour un utilisateur (status, score, etc.)
+// @access  Private (ADMIN ou SUPER_ADMIN)
+router.put('/:id', [auth, adminAuth], async (req, res) => {
+    try {
+        const { status, score, nom, prenom, telephone, rejectionReason } = req.body;
+
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ msg: 'Utilisateur non trouvé' });
+        }
+
+        // Mise à jour des champs autorisés
+        if (status !== undefined) {
+            // Valider le statut
+            const validStatuses = ['EN_ATTENTE', 'ACTIF', 'SUSPENDU', 'BLOQUE', 'REACTIVATION_EN_ATTENTE', 'INACTIF_EXCLU', 'EN_VERIFICATION_DOUBLON', 'REJETE'];
+            if (!validStatuses.includes(status)) {
+                return res.status(400).json({ msg: 'Statut invalide' });
+            }
+            user.status = status;
+        }
+
+        if (score !== undefined) user.score = score;
+        if (nom !== undefined) user.nom = nom;
+        if (prenom !== undefined) user.prenom = prenom;
+        if (telephone !== undefined) user.telephone = telephone;
+        if (rejectionReason !== undefined) user.rejectionReason = rejectionReason;
+
+        // Mettre à jour la date de dernière activité
+        user.dateDerniereActivite = Date.now();
+
+        await user.save();
+
+        // Ne pas retourner le mot de passe
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        res.json({ msg: 'Utilisateur mis à jour', user: userResponse });
+    } catch (err) {
+        console.error(err.message);
         res.status(500).send('Erreur serveur');
     }
 });

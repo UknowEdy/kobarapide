@@ -15,9 +15,15 @@ const adminAuth = (req, res, next) => {
 // @desc    Create a loan application
 // @access  Private
 router.post('/', auth, async (req, res) => {
-    const { requestedAmount, loanPurpose } = req.body;
-    
+    // Accepter les noms français OU anglais pour compatibilité frontend
+    const requestedAmount = req.body.requestedAmount || req.body.montant;
+    const loanPurpose = req.body.loanPurpose || req.body.raison;
+
     try {
+        if (!requestedAmount || !loanPurpose) {
+            return res.status(400).json({ msg: 'Montant et raison requis' });
+        }
+
         const fees = requestedAmount * 0.1; // 10%
         const netAmount = requestedAmount * 1.1;
 
@@ -44,8 +50,13 @@ router.post('/', auth, async (req, res) => {
 router.get('/', auth, async (req, res) => {
     try {
         let loans;
-        if (req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN') {
-            loans = await LoanApplication.find().populate('userId', ['prenom', 'nom']);
+        if (req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN' || req.user.role === 'MODERATEUR') {
+            // Admin/Moderateur peut filtrer par statut
+            const filter = {};
+            if (req.query.status) {
+                filter.status = req.query.status;
+            }
+            loans = await LoanApplication.find(filter).populate('userId', ['prenom', 'nom']);
         } else {
             loans = await LoanApplication.find({ userId: req.user.id });
         }
