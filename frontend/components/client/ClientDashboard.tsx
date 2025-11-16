@@ -79,7 +79,6 @@ export default function ClientDashboard() {
         body: JSON.stringify({
           userId: loggedInUser?._id,
           montant: montant,
-          duree: Number(formData.get('duree')),
           raison: formData.get('raison')
         })
       });
@@ -338,18 +337,15 @@ export default function ClientDashboard() {
                 </div>
               </div>
 
-              <div>
-                <label className="block mb-2 text-sm">Durée (jours)</label>
-                <input
-                  type="number"
-                  name="duree"
-                  required
-                  min="7"
-                  max="365"
-                  defaultValue="30"
-                  className={`w-full p-3 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                />
+              {/* Info sur le système de remboursement */}
+              <div className={`p-3 rounded ${darkMode ? 'bg-blue-900 bg-opacity-30' : 'bg-blue-50'} text-sm`}>
+                <p className="font-bold mb-2 text-blue-500">📅 Calendrier de Remboursement</p>
+                <ul className="space-y-1 text-xs">
+                  <li>• <strong>1ère tranche (50%)</strong> : 30 jours après déblocage</li>
+                  <li>• <strong>2ème tranche (50%)</strong> : 60 jours après déblocage</li>
+                </ul>
               </div>
+
               <div>
                 <label className="block mb-2 text-sm">Raison du prêt</label>
                 <textarea

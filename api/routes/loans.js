@@ -116,18 +116,35 @@ router.put('/:id/status', [auth, adminAuth], async (req, res) => {
         loan.status = status;
         if (reason) loan.rejectionReason = reason;
 
+        // Marquer la date d'approbation
         if (status === 'APPROUVE') {
             loan.approvedAt = Date.now();
-            // Generate installments
-            const installmentAmount = loan.netAmount / 2;
+        }
+
+        // Générer les échéances au moment du DÉBLOCAGE (quand l'argent est versé)
+        if (status === 'DEBLOQUE') {
+            loan.disbursedAt = Date.now();
+
+            // Calculer les montants des 2 tranches (50% chacune)
+            const installmentAmount = loan.requestedAmount / 2;
             const today = new Date();
+
+            // Tranche 1 : 50% à 30 jours
+            // Tranche 2 : 50% à 60 jours
             loan.installments = [
-                { installmentNumber: 1, dueDate: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000), dueAmount: installmentAmount },
-                { installmentNumber: 2, dueDate: new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000), dueAmount: installmentAmount }
+                {
+                    installmentNumber: 1,
+                    dueDate: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000),
+                    dueAmount: installmentAmount
+                },
+                {
+                    installmentNumber: 2,
+                    dueDate: new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000),
+                    dueAmount: installmentAmount
+                }
             ];
         }
-        if (status === 'DEBLOQUE') loan.disbursedAt = Date.now();
-        
+
         await loan.save();
         res.json(loan);
     } catch (err) {
