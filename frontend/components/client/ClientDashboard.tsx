@@ -44,9 +44,8 @@ export default function ClientDashboard() {
         },
         body: JSON.stringify({
           userId: loggedInUser?._id,
-          montant: Number(formData.get('montant')),
-          duree: Number(formData.get('duree')),
-          raison: formData.get('raison')
+          requestedAmount: Number(formData.get('montant')),
+          loanPurpose: formData.get('raison')
         })
       });
 
@@ -64,8 +63,8 @@ export default function ClientDashboard() {
     }
   };
 
-  const activeLoan = loans.find(l => l.statut === 'DEBLOQUE' || l.statut === 'APPROUVE');
-  const loanHistory = loans.filter(l => l.statut === 'REMBOURSE');
+  const activeLoan = loans.find(l => l.status === 'DEBLOQUE' || l.status === 'APPROUVE');
+  const loanHistory = loans.filter(l => l.status === 'REMBOURSE');
   const maxLoanAmount = 10000;
 
   return (
@@ -158,21 +157,21 @@ export default function ClientDashboard() {
               {activeLoan ? (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{activeLoan.raison || 'Achat matériel'}</span>
-                    <span className="font-bold">{activeLoan.montant?.toLocaleString()}F</span>
+                    <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{activeLoan.loanPurpose || 'Achat matériel'}</span>
+                    <span className="font-bold">{activeLoan.requestedAmount?.toLocaleString()}F</span>
                   </div>
-                  
+
                   {/* Progress Bar */}
                   <div className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-2`}>
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full"
-                      style={{ width: `${activeLoan.montantRembourse / activeLoan.montant * 100 || 0}%` }}
+                      style={{ width: `${activeLoan.installments ? (activeLoan.installments.filter((i: any) => i.status === 'PAYEE').length / activeLoan.installments.length * 100) : 0}%` }}
                     ></div>
                   </div>
-                  
+
                   <div className="flex justify-between text-sm">
                     <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                      {activeLoan.montantRembourse || 0}% remboursé
+                      {activeLoan.installments ? activeLoan.installments.filter((i: any) => i.status === 'PAYEE').length : 0} / {activeLoan.installments?.length || 0} échéances payées
                     </span>
                   </div>
 
@@ -202,12 +201,12 @@ export default function ClientDashboard() {
                   <tbody>
                     {loanHistory.map(loan => (
                       <tr key={loan._id} className={`border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                        <td className="py-3 text-sm">{new Date(loan.dateCreation).toLocaleDateString()}</td>
-                        <td className="py-3 text-sm">{loan.montant?.toLocaleString()}F</td>
-                        <td className="py-3 text-sm">{loan.raison}</td>
+                        <td className="py-3 text-sm">{new Date(loan.createdAt).toLocaleDateString()}</td>
+                        <td className="py-3 text-sm">{loan.requestedAmount?.toLocaleString()}F</td>
+                        <td className="py-3 text-sm">{loan.loanPurpose}</td>
                         <td className="py-3">
                           <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs">
-                            {loan.statut}
+                            {loan.status}
                           </span>
                         </td>
                       </tr>
@@ -258,17 +257,6 @@ export default function ClientDashboard() {
                   required
                   min="100"
                   max={maxLoanAmount}
-                  className={`w-full p-3 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                />
-              </div>
-              <div>
-                <label className="block mb-2 text-sm">Durée (jours)</label>
-                <input
-                  type="number"
-                  name="duree"
-                  required
-                  min="7"
-                  max="365"
                   className={`w-full p-3 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                 />
               </div>

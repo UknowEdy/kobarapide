@@ -43,13 +43,62 @@ router.post('/', auth, async (req, res) => {
 // @access  Private
 router.get('/', auth, async (req, res) => {
     try {
-        let loans;
+        const { status, userId } = req.query;
+        let query = {};
+
         if (req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN') {
-            loans = await LoanApplication.find().populate('userId', ['prenom', 'nom']);
+            // Admin can filter by status and userId
+            if (status) query.status = status;
+            if (userId) query.userId = userId;
         } else {
-            loans = await LoanApplication.find({ userId: req.user.id });
+            // Regular users can only see their own loans
+            query.userId = req.user.id;
         }
+
+        const loans = await LoanApplication.find(query).populate('userId', ['prenom', 'nom', 'email']);
         res.json(loans);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Erreur du serveur');
+    }
+});
+
+// @route   POST api/loans/:id/approve
+// @desc    Approve a loan application
+// @access  Private (Admin)
+router.post('/:id/approve', [auth, adminAuth], async (req, res) => {
+    try {
+        const loan = await LoanApplication.findById(req.params.id);
+        if (!loan) return res.status(404).json({ msg: 'Prêt non trouvé' });
+
+        if (loan.status !== 'EN_ATTENTE') {
+            return res.status(400).json({ msg: 'Ce prêt ne peut pas être approuvé' });
+        }
+
+        loan.status = 'APPROUVE';
+        loan.approvedAt = Date.now();
+        loan.validatedBy = req.user.id;
+
+        // Generate installments (2 payments)
+        const installmentAmount = loan.netAmount / 2;
+        const today = new Date();
+        loan.installments = [
+            {
+                installmentNumber: 1,
+                dueDate: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000),
+                dueAmount: installmentAmount,
+                status: 'EN_ATTENTE'
+            },
+            {
+                installmentNumber: 2,
+                dueDate: new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000),
+                dueAmount: installmentAmount,
+                status: 'EN_ATTENTE'
+            }
+        ];
+
+        await loan.save();
+        res.json(loan);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Erreur du serveur');
@@ -68,18 +117,8 @@ router.put('/:id/status', [auth, adminAuth], async (req, res) => {
         loan.status = status;
         if (reason) loan.rejectionReason = reason;
 
-        if (status === 'APPROUVE') {
-            loan.approvedAt = Date.now();
-            // Generate installments
-            const installmentAmount = loan.netAmount / 2;
-            const today = new Date();
-            loan.installments = [
-                { installmentNumber: 1, dueDate: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000), dueAmount: installmentAmount },
-                { installmentNumber: 2, dueDate: new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000), dueAmount: installmentAmount }
-            ];
-        }
         if (status === 'DEBLOQUE') loan.disbursedAt = Date.now();
-        
+
         await loan.save();
         res.json(loan);
     } catch (err) {
