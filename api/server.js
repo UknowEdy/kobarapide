@@ -9,12 +9,16 @@ const adminRoutes = require('./routes/admin');
 const staffRoutes = require('./routes/staff');
 const duplicatesRoutes = require('./routes/duplicates');
 const waitingListRoutes = require('./routes/waiting-list');
+const uploadRoutes = require('./routes/upload');
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve uploaded files statically
+app.use('/uploads', express.static('uploads'));
 
 // Connect to MongoDB
 connectDB();
@@ -31,6 +35,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/duplicates', duplicatesRoutes);
 app.use('/api/waiting-list', waitingListRoutes);
+app.use('/api/upload', uploadRoutes);
 
 const PORT = process.env.PORT || 3001;
 
