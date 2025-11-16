@@ -1,16 +1,26 @@
 const API_BASE_URL = 'https://kobarapide.onrender.com';
 
-export const fetchGET = async (endpoint) => {
+interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  msg?: string;
+  message?: string;
+}
+
+export const fetchGET = async (endpoint: string): Promise<ApiResponse> => {
   const token = localStorage.getItem('token');
   const response = await fetch(API_BASE_URL + endpoint, {
     headers: { 'x-auth-token': token || '', 'Content-Type': 'application/json' },
     cache: 'no-store'
   });
   const data = await response.json();
-  return response.ok ? { success: true, data: data.data || data } : { success: false, error: data.msg };
+  return response.ok
+    ? { success: true, data: data.data || data, message: data.msg || data.message }
+    : { success: false, error: data.msg || data.message, message: data.msg || data.message };
 };
 
-export const fetchPOST = async (endpoint, body = {}) => {
+export const fetchPOST = async (endpoint: string, body: any = {}): Promise<ApiResponse> => {
   const token = localStorage.getItem('token');
   const response = await fetch(API_BASE_URL + endpoint, {
     method: 'POST',
@@ -18,10 +28,12 @@ export const fetchPOST = async (endpoint, body = {}) => {
     body: JSON.stringify(body)
   });
   const data = await response.json();
-  return response.ok ? { success: true, data: data.data || data } : { success: false, error: data.msg };
+  return response.ok
+    ? { success: true, data: data.data || data, message: data.msg || data.message }
+    : { success: false, error: data.msg || data.message, message: data.msg || data.message };
 };
 
-export const fetchPUT = async (endpoint, body = {}) => {
+export const fetchPUT = async (endpoint: string, body: any = {}): Promise<ApiResponse> => {
   const token = localStorage.getItem('token');
   const response = await fetch(API_BASE_URL + endpoint, {
     method: 'PUT',
@@ -29,28 +41,32 @@ export const fetchPUT = async (endpoint, body = {}) => {
     body: JSON.stringify(body)
   });
   const data = await response.json();
-  return response.ok ? { success: true, data: data.data || data } : { success: false, error: data.msg };
+  return response.ok
+    ? { success: true, data: data.data || data, message: data.msg || data.message }
+    : { success: false, error: data.msg || data.message, message: data.msg || data.message };
 };
 
-export const fetchDELETE = async (endpoint) => {
+export const fetchDELETE = async (endpoint: string): Promise<ApiResponse> => {
   const token = localStorage.getItem('token');
   const response = await fetch(API_BASE_URL + endpoint, {
     method: 'DELETE',
     headers: { 'x-auth-token': token || '', 'Content-Type': 'application/json' }
   });
   const data = await response.json();
-  return response.ok ? { success: true, data: data.data || data } : { success: false, error: data.msg };
+  return response.ok
+    ? { success: true, data: data.data || data, message: data.msg || data.message }
+    : { success: false, error: data.msg || data.message, message: data.msg || data.message };
 };
 
-export const isAuthenticated = () => !!localStorage.getItem('token');
+export const isAuthenticated = (): boolean => !!localStorage.getItem('token');
 
-export const logout = () => {
+export const logout = (): void => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   window.location.href = '/';
 };
 
-export const getCurrentUser = () => {
+export const getCurrentUser = (): any => {
   const user = localStorage.getItem('user');
   return user ? JSON.parse(user) : null;
 };

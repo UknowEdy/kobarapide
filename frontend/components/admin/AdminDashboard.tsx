@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { fetchGET, logout, getCurrentUser } from '../../utils/api';
+import { useState } from 'react';
+import { logout, getCurrentUser } from '../../utils/api';
 import StatsSection from './sections/StatsSection';
 import ClientsSection from './sections/ClientsSection';
 import LoansSection from './sections/LoansSection';
@@ -94,13 +94,7 @@ export default function AdminDashboard() {
 
       {/* CONTENT */}
       <main className={`${darkMode ? 'bg-gray-900' : 'bg-gray-50'} min-h-screen p-8`}>
-        {loading && activeTab === 'dashboard' ? (
-          <div className="flex items-center justify-center h-96">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
-          </div>
-        ) : (
-          renderContent()
-        )}
+        {renderContent()}
       </main>
     </div>
   );

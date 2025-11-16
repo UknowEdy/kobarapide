@@ -8,12 +8,9 @@ interface ProfileUploadProps {
 }
 
 const ProfileUpload: React.FC<ProfileUploadProps> = ({ user, darkMode = true, onClose }) => {
-  const [uploading, setUploading] = useState(false);
-
   const API_URL = import.meta.env.VITE_API_URL || 'https://kobarapide.onrender.com';
 
   const handleIdCardUpload = async (file: File) => {
-    setUploading(true);
     try {
       const formData = new FormData();
       formData.append('idCard', file);
@@ -38,13 +35,10 @@ const ProfileUpload: React.FC<ProfileUploadProps> = ({ user, darkMode = true, on
     } catch (error: any) {
       console.error('Error uploading ID card:', error);
       return { success: false, message: error.message || 'Erreur serveur' };
-    } finally {
-      setUploading(false);
     }
   };
 
   const handleSelfieUpload = async (file: File) => {
-    setUploading(true);
     try {
       const formData = new FormData();
       formData.append('selfie', file);
@@ -69,8 +63,6 @@ const ProfileUpload: React.FC<ProfileUploadProps> = ({ user, darkMode = true, on
     } catch (error: any) {
       console.error('Error uploading selfie:', error);
       return { success: false, message: error.message || 'Erreur serveur' };
-    } finally {
-      setUploading(false);
     }
   };
 
