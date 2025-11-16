@@ -22,9 +22,10 @@ router.post('/register', async (req, res) => {
         // NORMALISER LE TÉLÉPHONE
         telephone = normalizePhone(telephone);
 
+        // Vérifier si l'email existe déjà (quel que soit le rôle)
         let user = await User.findOne({ email });
         if (user) {
-            return res.status(400).json({ msg: 'Un utilisateur avec cet email existe déjà' });
+            return res.status(400).json({ msg: 'Cet email est déjà utilisé dans le système' });
         }
 
         // DÉTECTION DE DOUBLONS

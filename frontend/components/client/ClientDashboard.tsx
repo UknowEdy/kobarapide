@@ -7,8 +7,27 @@ export default function ClientDashboard() {
   const [loans, setLoans] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDemandePret, setShowDemandePret] = useState(false);
+  const [loanAmount, setLoanAmount] = useState(5000); // Montant par défaut
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://kobarapide.onrender.com';
+
+  // Fonction pour calculer le montant maximum selon le score
+  const getMaxLoanAmount = (score: number) => {
+    if (score >= 0 && score <= 3) return 5000;
+    if (score >= 4 && score <= 6) return 10000;
+    if (score >= 7 && score <= 9) return 15000;
+    if (score === 10) return 20000;
+    return 0;
+  };
+
+  // Fonction pour obtenir la couleur du score
+  const getScoreColor = (score: number) => {
+    if (score >= 0 && score <= 3) return 'text-red-500';
+    if (score >= 4 && score <= 6) return 'text-orange-500';
+    if (score >= 7 && score <= 9) return 'text-green-400';
+    if (score === 10) return 'text-green-600';
+    return 'text-gray-500';
+  };
 
   useEffect(() => {
     fetchMyLoans();
@@ -33,7 +52,22 @@ export default function ClientDashboard() {
   const handleLoanRequest = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+    const montant = Number(formData.get('montant'));
+    const score = loggedInUser?.score || 0;
+    const maxMontant = getMaxLoanAmount(score);
+
+    // Validation : montant doit être un multiple de 5000
+    if (montant % 5000 !== 0) {
+      alert('⚠️ Le montant doit être un multiple de 5 000 F');
+      return;
+    }
+
+    // Validation : montant ne doit pas dépasser le maximum autorisé
+    if (montant > maxMontant) {
+      alert(`⚠️ Votre score (${score}) permet un prêt maximum de ${maxMontant.toLocaleString()} F`);
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/loans`, {
@@ -44,19 +78,22 @@ export default function ClientDashboard() {
         },
         body: JSON.stringify({
           userId: loggedInUser?._id,
-          montant: Number(formData.get('montant')),
+          montant: montant,
           duree: Number(formData.get('duree')),
           raison: formData.get('raison')
         })
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         alert('✅ Demande de prêt soumise avec succès!');
         e.currentTarget.reset();
+        setLoanAmount(5000); // Reset au montant par défaut
         setShowDemandePret(false);
         fetchMyLoans();
       } else {
-        alert('❌ Erreur lors de la demande');
+        alert(`❌ ${data.msg || 'Erreur lors de la demande'}`);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -66,7 +103,13 @@ export default function ClientDashboard() {
 
   const activeLoan = loans.find(l => l.statut === 'DEBLOQUE' || l.statut === 'APPROUVE');
   const loanHistory = loans.filter(l => l.statut === 'REMBOURSE');
-  const maxLoanAmount = 10000;
+  const userScore = loggedInUser?.score || 0;
+  const maxLoanAmount = getMaxLoanAmount(userScore);
+  const scoreColor = getScoreColor(userScore);
+
+  // Calculer les frais et le montant net pour l'affichage
+  const fees = loanAmount * 0.05;
+  const netAmount = loanAmount - fees;
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
@@ -123,7 +166,8 @@ export default function ClientDashboard() {
           {/* Score */}
           <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-lg shadow`}>
             <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Votre Score</p>
-            <p className="text-4xl font-bold text-blue-500">{loggedInUser?.score || 0}</p>
+            <p className={`text-4xl font-bold ${scoreColor}`}>{userScore}</p>
+            <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>sur 10</p>
           </div>
 
           {/* Status */}
@@ -249,18 +293,51 @@ export default function ClientDashboard() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md w-full`}>
             <h3 className="text-2xl font-bold mb-4">Demander un Prêt</h3>
+
+            {/* Info Score et Montant Max */}
+            <div className={`p-3 mb-4 rounded ${darkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm">Votre score :</span>
+                <span className={`font-bold ${scoreColor}`}>{userScore}/10</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Montant maximum :</span>
+                <span className="font-bold text-blue-500">{maxLoanAmount.toLocaleString()} F</span>
+              </div>
+            </div>
+
             <form onSubmit={handleLoanRequest} className="space-y-4">
               <div>
-                <label className="block mb-2 text-sm">Montant (F)</label>
+                <label className="block mb-2 text-sm">Montant (multiples de 5 000 F uniquement)</label>
                 <input
                   type="number"
                   name="montant"
+                  value={loanAmount}
+                  onChange={(e) => setLoanAmount(Number(e.target.value))}
                   required
-                  min="100"
+                  min="5000"
                   max={maxLoanAmount}
+                  step="5000"
                   className={`w-full p-3 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                 />
               </div>
+
+              {/* Affichage des frais et montant net */}
+              <div className={`p-3 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} text-sm space-y-1`}>
+                <div className="flex justify-between">
+                  <span>Montant demandé :</span>
+                  <span className="font-bold">{loanAmount.toLocaleString()} F</span>
+                </div>
+                <div className="flex justify-between text-red-400">
+                  <span>Frais de dossier (5%) :</span>
+                  <span className="font-bold">- {fees.toLocaleString()} F</span>
+                </div>
+                <div className={`flex justify-between pt-2 border-t ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                  <span className="font-bold">Montant à recevoir :</span>
+                  <span className="font-bold text-green-500">{netAmount.toLocaleString()} F</span>
+                </div>
+              </div>
+
               <div>
                 <label className="block mb-2 text-sm">Durée (jours)</label>
                 <input
@@ -269,22 +346,27 @@ export default function ClientDashboard() {
                   required
                   min="7"
                   max="365"
+                  defaultValue="30"
                   className={`w-full p-3 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                 />
               </div>
               <div>
-                <label className="block mb-2 text-sm">Raison</label>
+                <label className="block mb-2 text-sm">Raison du prêt</label>
                 <textarea
                   name="raison"
                   required
                   rows={3}
+                  placeholder="Expliquez brièvement l'utilisation des fonds..."
                   className={`w-full p-3 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                 />
               </div>
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setShowDemandePret(false)}
+                  onClick={() => {
+                    setShowDemandePret(false);
+                    setLoanAmount(5000);
+                  }}
                   className={`flex-1 py-3 rounded font-bold ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Annuler

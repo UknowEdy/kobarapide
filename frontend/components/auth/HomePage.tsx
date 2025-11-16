@@ -88,7 +88,7 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col justify-center items-center bg-koba-bg px-4 py-8">
       <img src="/icon-192x192.png" alt="Kobarapide" className="w-24 h-24 mb-8" />
       <h1 className="text-4xl font-bold text-koba-accent mb-2">Kobarapide</h1>
-      <p className="text-koba-text text-lg mb-12">Community Lending Platform</p>
+      <p className="text-koba-text text-lg mb-12">Plateforme d'Entraide Sociale</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
         
@@ -138,7 +138,7 @@ export default function HomePage() {
           </form>
 
           <p className="text-gray-400 text-xs mt-4 text-center">
-            Test: edemkukuz@gmail.com
+            Besoin d'aide ? Contactez-nous : contactkobarapide@gmail.com
           </p>
         </div>
 

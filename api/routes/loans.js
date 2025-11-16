@@ -24,8 +24,45 @@ router.post('/', auth, async (req, res) => {
             return res.status(400).json({ msg: 'Montant et raison requis' });
         }
 
-        const fees = requestedAmount * 0.1; // 10%
-        const netAmount = requestedAmount * 1.1;
+        // Récupérer l'utilisateur pour vérifier son score
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ msg: 'Utilisateur non trouvé' });
+        }
+
+        // Validation : montant doit être un multiple de 5000F
+        if (requestedAmount % 5000 !== 0) {
+            return res.status(400).json({
+                msg: 'Le montant doit être un multiple de 5 000 F'
+            });
+        }
+
+        // Calculer le montant maximum selon le score
+        const score = user.score || 0;
+        let maxMontant = 0;
+
+        if (score >= 0 && score <= 3) {
+            maxMontant = 5000;
+        } else if (score >= 4 && score <= 6) {
+            maxMontant = 10000;
+        } else if (score >= 7 && score <= 9) {
+            maxMontant = 15000;
+        } else if (score === 10) {
+            maxMontant = 20000;
+        }
+
+        // Vérifier que le montant demandé ne dépasse pas le maximum autorisé
+        if (requestedAmount > maxMontant) {
+            return res.status(400).json({
+                msg: `Votre score (${score}) permet un prêt maximum de ${maxMontant.toLocaleString()} F`
+            });
+        }
+
+        // Calculer les frais de dossier et transfert (5%)
+        const fees = requestedAmount * 0.05;
+
+        // Calculer le montant net que l'utilisateur recevra
+        const netAmount = requestedAmount - fees;
 
         const newLoan = new LoanApplication({
             userId: req.user.id,
