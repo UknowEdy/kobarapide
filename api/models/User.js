@@ -24,6 +24,10 @@ const UserSchema = new mongoose.Schema({
     dateDerniereActivite: { type: Date, default: Date.now },
     nombrePretsRembourses: { type: Number, default: 0 },
     rejectionReason: { type: String },
+    emailVerificationToken: { type: String },
+    emailVerificationExpires: { type: Date },
+    passwordResetToken: { type: String },
+    passwordResetExpires: { type: Date },
 }, { timestamps: true });
 
 // TTL Index pour selfieIdUrl - expire après 30 jours (2592000 secondes)
