@@ -12,6 +12,7 @@ const duplicatesRoutes = require('./routes/duplicates');
 const waitingListRoutes = require('./routes/waiting-list');
 const capacityRoutes = require('./routes/capacity');
 const maintenanceMode = require('./middleware/maintenanceMode');
+const AppConfig = require('./models/AppConfig');
 
 const app = express();
 
@@ -22,8 +23,22 @@ app.use(express.json());
 // Servir les fichiers statiques (pour la page de maintenance)
 app.use(express.static(path.join(__dirname, '..')));
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB et charger la config de maintenance
+connectDB().then(async () => {
+    try {
+        // Charger la config de maintenance depuis MongoDB
+        const config = await AppConfig.findOne();
+        if (config && config.maintenanceMode) {
+            process.env.MAINTENANCE_MODE = 'true';
+            console.log('📋 Config maintenance chargée depuis MongoDB: ACTIVÉ');
+        } else {
+            // Si pas de config en DB, utiliser la valeur par défaut de .env
+            console.log('📋 Config maintenance: utilisation de la valeur .env');
+        }
+    } catch (err) {
+        console.error('⚠️  Erreur chargement config maintenance:', err.message);
+    }
+});
 
 // Mode Maintenance (doit être AVANT les routes)
 app.use(maintenanceMode);
