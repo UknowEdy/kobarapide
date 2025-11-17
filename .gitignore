@@ -34,6 +34,8 @@ yarn-debug.log*
 # Credentials & Secrets
 credentials.json
 secrets.json
+CREDENTIALS.md
+*.credentials.md
 .aws/
 .ssh/
 
