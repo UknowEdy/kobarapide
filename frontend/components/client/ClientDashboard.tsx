@@ -84,10 +84,11 @@ export default function ClientDashboard() {
       const token = localStorage.getItem('token');
       console.log('🔑 Token présent:', token ? 'Oui' : 'Non');
 
+      // ✅ CORRECTION: Le backend utilise req.user.id du token JWT, pas de userId dans le body
+      // ✅ Utiliser requestedAmount et loanPurpose (noms anglais cohérents)
       const payload = {
-        userId: loggedInUser?._id,
-        montant: montant,
-        raison: raison
+        requestedAmount: montant,
+        loanPurpose: raison
       };
 
       console.log('📦 Payload envoyé:', payload);
