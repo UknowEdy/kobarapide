@@ -63,7 +63,7 @@ export default function AdminDashboard() {
       case 'liststaff':
         return <ListStaffSection />;
       case 'settings':
-        return <SettingsSection />;
+        return <SettingsSection isSuperAdmin={user?.role === 'SUPER_ADMIN'} />;
       default:
         return null;
     }

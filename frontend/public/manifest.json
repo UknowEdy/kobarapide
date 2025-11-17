@@ -1,7 +1,7 @@
 {
-  "name": "Kobarapide - Community Lending",
+  "name": "Kobarapide - Entraide Sociale",
   "short_name": "Kobarapide",
-  "description": "Microfinance application for community lending",
+  "description": "Plateforme d'entraide sociale pour prêts solidaires",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
