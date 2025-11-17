@@ -7,9 +7,10 @@ import WaitingListSection from './sections/WaitingListSection';
 import DuplicatesSection from './sections/DuplicatesSection';
 import StaffSection from './sections/StaffSection';
 import ListStaffSection from './sections/ListStaffSection';
+import CreateClientSection from './sections/CreateClientSection';
 import SettingsSection from './sections/SettingsSection';
 
-type TabType = 'dashboard' | 'clients' | 'loans' | 'waiting' | 'duplicates' | 'staff' | 'liststaff' | 'settings';
+type TabType = 'dashboard' | 'clients' | 'loans' | 'waiting' | 'duplicates' | 'staff' | 'liststaff' | 'createclient' | 'settings';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -27,6 +28,7 @@ export default function AdminDashboard() {
     { id: 'duplicates', label: '🔍 Doublons', roles: ['MODERATEUR', 'ADMIN', 'SUPER_ADMIN'] },
     { id: 'staff', label: '👔 Gérer Staff', roles: ['ADMIN', 'SUPER_ADMIN'] },
     { id: 'liststaff', label: '👥 Liste Staff', roles: ['ADMIN', 'SUPER_ADMIN'] },
+    { id: 'createclient', label: '➕ Créer Client', roles: ['ADMIN', 'SUPER_ADMIN'] },
     { id: 'settings', label: '⚙️ Paramètres', roles: ['ADMIN', 'SUPER_ADMIN'] }
   ];
 
@@ -66,6 +68,8 @@ export default function AdminDashboard() {
         return <StaffSection />;
       case 'liststaff':
         return <ListStaffSection />;
+      case 'createclient':
+        return <CreateClientSection />;
       case 'settings':
         return <SettingsSection isAdmin={user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'} isSuperAdmin={user?.role === 'SUPER_ADMIN'} />;
       default:

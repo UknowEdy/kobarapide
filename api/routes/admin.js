@@ -4,6 +4,7 @@ const auth = require('../middleware/authMiddleware');
 const User = require('../models/User');
 const AppConfig = require('../models/AppConfig');
 const Settings = require('../models/Settings');
+const LoanApplication = require('../models/LoanApplication');
 const adminAuth = (req, res, next) => {
     if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') return res.status(403).json({ msg: 'Refusé' });
     next();
@@ -313,6 +314,92 @@ router.post('/create-client', [auth, adminAuth], async (req, res) => {
         res.status(500).json({
             success: false,
             msg: 'Erreur serveur lors de la création du client'
+        });
+    }
+});
+
+// ========================================
+// ROUTES STATISTIQUES FINANCIÈRES
+// ========================================
+
+// @route   GET /api/admin/stats/financial
+// @desc    Récupérer les statistiques financières globales
+// @access  Private (ADMIN et SUPER_ADMIN uniquement)
+router.get('/stats/financial', [auth, adminAuth], async (req, res) => {
+    try {
+        console.log('\n📊 ===== STATS FINANCIÈRES =====');
+
+        // 1. Total investi (somme de tous les prêts approuvés)
+        const approvedLoans = await LoanApplication.find({
+            status: { $in: ['APPROUVE', 'DEBLOQUE', 'REMBOURSE'] }
+        });
+
+        const totalInvested = approvedLoans.reduce((sum, loan) => sum + (loan.requestedAmount || 0), 0);
+
+        // 2. Total remboursé (somme des prêts avec statut REMBOURSE)
+        const repaidLoans = await LoanApplication.find({ status: 'REMBOURSE' });
+        const totalRepaid = repaidLoans.reduce((sum, loan) => sum + (loan.requestedAmount || 0), 0);
+
+        // 3. Prêts en cours (DEBLOQUE mais pas encore REMBOURSE)
+        const activeLoans = await LoanApplication.find({ status: 'DEBLOQUE' });
+        const totalActive = activeLoans.reduce((sum, loan) => sum + (loan.requestedAmount || 0), 0);
+
+        // 4. Total des frais de dossier (5% de tous les prêts approuvés)
+        const totalFees = approvedLoans.reduce((sum, loan) => sum + (loan.fees || 0), 0);
+
+        // 5. Bénéfice net (simplifié: frais de dossier collectés)
+        // Note: Dans un vrai système, il faudrait aussi soustraire les coûts opérationnels
+        const netProfit = totalFees;
+
+        // 6. Statistiques par statut
+        const loansByStatus = await LoanApplication.aggregate([
+            {
+                $group: {
+                    _id: '$status',
+                    count: { $sum: 1 },
+                    total: { $sum: '$requestedAmount' }
+                }
+            }
+        ]);
+
+        // 7. Taux de remboursement
+        const repaymentRate = totalInvested > 0 ? (totalRepaid / totalInvested * 100).toFixed(2) : 0;
+
+        const stats = {
+            totalInvested,
+            totalRepaid,
+            totalActive,
+            totalFees,
+            netProfit,
+            repaymentRate,
+            loansByStatus,
+            counts: {
+                total: approvedLoans.length,
+                repaid: repaidLoans.length,
+                active: activeLoans.length
+            }
+        };
+
+        console.log('✅ Stats calculées:', {
+            investi: totalInvested,
+            rembourse: totalRepaid,
+            actif: totalActive,
+            frais: totalFees,
+            benefice: netProfit
+        });
+        console.log('====================================\n');
+
+        res.json({
+            success: true,
+            data: stats
+        });
+
+    } catch (err) {
+        console.error('❌ Erreur stats financières:', err.message);
+        console.log('====================================\n');
+        res.status(500).json({
+            success: false,
+            msg: 'Erreur serveur lors du calcul des statistiques'
         });
     }
 });
