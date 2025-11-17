@@ -272,12 +272,12 @@ export default function ClientDashboard() {
                   <tbody>
                     {loanHistory.map(loan => (
                       <tr key={loan._id} className={`border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                        <td className="py-3 text-sm">{new Date(loan.dateCreation).toLocaleDateString()}</td>
-                        <td className="py-3 text-sm">{loan.montant?.toLocaleString()}F</td>
-                        <td className="py-3 text-sm">{loan.raison}</td>
+                        <td className="py-3 text-sm">{new Date(loan.createdAt).toLocaleDateString()}</td>
+                        <td className="py-3 text-sm">{loan.requestedAmount?.toLocaleString()}F</td>
+                        <td className="py-3 text-sm">{loan.loanPurpose}</td>
                         <td className="py-3">
                           <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs">
-                            {loan.statut}
+                            {loan.status}
                           </span>
                         </td>
                       </tr>
