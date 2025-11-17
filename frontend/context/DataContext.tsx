@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
 
 interface DataContextType {
@@ -14,11 +14,48 @@ const DataContext = createContext<DataContextType | null>(null);
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isUpdating] = useState(false);
   const [loans] = useState([]);
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://kobarapide.onrender.com';
+
+  // Charger l'utilisateur depuis localStorage au démarrage
+  useEffect(() => {
+    const loadUser = async () => {
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+
+      if (!token || !userStr) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Vérifier que le token est toujours valide
+        const response = await fetch(`${API_URL}/api/auth/me`, {
+          headers: { 'x-auth-token': token }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ Utilisateur rechargé depuis token:', data.user?.email);
+          setLoggedInUser(data.user);
+        } else {
+          // Token invalide, nettoyer le localStorage
+          console.log('⚠️ Token invalide ou expiré, déconnexion');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement de l\'utilisateur:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUser();
+  }, [API_URL]);
 
   const login = async (email: string, password: string) => {
     setLoading(true);

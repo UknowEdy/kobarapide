@@ -15,23 +15,36 @@ const adminAuth = (req, res, next) => {
 // @desc    Create a loan application
 // @access  Private
 router.post('/', auth, async (req, res) => {
+    console.log('\n📋 ===== NOUVELLE DEMANDE DE PRÊT =====');
+    console.log('📨 Body reçu:', req.body);
+    console.log('👤 User ID:', req.user?.id);
+    console.log('👤 User role:', req.user?.role);
+
     // Accepter les noms français OU anglais pour compatibilité frontend
     const requestedAmount = req.body.requestedAmount || req.body.montant;
     const loanPurpose = req.body.loanPurpose || req.body.raison;
 
+    console.log('💰 Montant extrait:', requestedAmount);
+    console.log('📝 Raison extraite:', loanPurpose);
+
     try {
         if (!requestedAmount || !loanPurpose) {
+            console.log('❌ Validation échouée: champs manquants');
             return res.status(400).json({ msg: 'Montant et raison requis' });
         }
 
         // Récupérer l'utilisateur pour vérifier son score
         const user = await User.findById(req.user.id);
         if (!user) {
+            console.log('❌ Utilisateur non trouvé, ID:', req.user.id);
             return res.status(404).json({ msg: 'Utilisateur non trouvé' });
         }
 
+        console.log('✅ Utilisateur trouvé:', user.email, '- Score:', user.score);
+
         // Validation : montant doit être un multiple de 5000F
         if (requestedAmount % 5000 !== 0) {
+            console.log('❌ Validation échouée: montant pas un multiple de 5000');
             return res.status(400).json({
                 msg: 'Le montant doit être un multiple de 5 000 F'
             });
@@ -51,8 +64,11 @@ router.post('/', auth, async (req, res) => {
             maxMontant = 20000;
         }
 
+        console.log('📊 Score:', score, '- Max autorisé:', maxMontant);
+
         // Vérifier que le montant demandé ne dépasse pas le maximum autorisé
         if (requestedAmount > maxMontant) {
+            console.log('❌ Montant demandé dépasse le maximum:', requestedAmount, '>', maxMontant);
             return res.status(400).json({
                 msg: `Votre score (${score}) permet un prêt maximum de ${maxMontant.toLocaleString()} F`
             });
@@ -64,6 +80,8 @@ router.post('/', auth, async (req, res) => {
         // Calculer le montant net que l'utilisateur recevra
         const netAmount = requestedAmount - fees;
 
+        console.log('💵 Calculs - Demandé:', requestedAmount, '- Frais:', fees, '- Net:', netAmount);
+
         const newLoan = new LoanApplication({
             userId: req.user.id,
             requestedAmount,
@@ -72,12 +90,18 @@ router.post('/', auth, async (req, res) => {
             netAmount,
         });
 
+        console.log('💾 Tentative de sauvegarde du prêt...');
         const loan = await newLoan.save();
+        console.log('✅ Prêt créé avec succès! ID:', loan._id);
+        console.log('====================================\n');
+
         res.json(loan);
 
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Erreur du serveur');
+        console.error('❌ ERREUR SERVEUR:', err.message);
+        console.error('Stack:', err.stack);
+        console.log('====================================\n');
+        res.status(500).json({ msg: 'Erreur du serveur', error: err.message });
     }
 });
 

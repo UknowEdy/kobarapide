@@ -7,9 +7,10 @@ import WaitingListSection from './sections/WaitingListSection';
 import DuplicatesSection from './sections/DuplicatesSection';
 import StaffSection from './sections/StaffSection';
 import ListStaffSection from './sections/ListStaffSection';
+import CreateClientSection from './sections/CreateClientSection';
 import SettingsSection from './sections/SettingsSection';
 
-type TabType = 'dashboard' | 'clients' | 'loans' | 'waiting' | 'duplicates' | 'staff' | 'liststaff' | 'settings';
+type TabType = 'dashboard' | 'clients' | 'loans' | 'waiting' | 'duplicates' | 'staff' | 'liststaff' | 'createclient' | 'settings';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -18,16 +19,21 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({ totalClients: 0, activeLoans: 0, pendingLoans: 0, duplicates: 0 });
   const user = getCurrentUser();
 
-  const tabs = [
-    { id: 'dashboard', label: '📊 Tableau de bord' },
-    { id: 'clients', label: '👥 Clients' },
-    { id: 'loans', label: '💰 Prêts' },
-    { id: 'waiting', label: '⏳ Listes d\'attente' },
-    { id: 'duplicates', label: '🔍 Doublons' },
-    { id: 'staff', label: '👔 Gérer Staff' },
-    { id: 'liststaff', label: '👥 Liste Staff' },
-    { id: 'settings', label: '⚙️ Paramètres' }
+  // Tous les onglets disponibles
+  const allTabs = [
+    { id: 'dashboard', label: '📊 Tableau de bord', roles: ['MODERATEUR', 'ADMIN', 'SUPER_ADMIN'] },
+    { id: 'clients', label: '👥 Clients', roles: ['MODERATEUR', 'ADMIN', 'SUPER_ADMIN'] },
+    { id: 'loans', label: '💰 Prêts', roles: ['MODERATEUR', 'ADMIN', 'SUPER_ADMIN'] },
+    { id: 'waiting', label: '⏳ Listes d\'attente', roles: ['MODERATEUR', 'ADMIN', 'SUPER_ADMIN'] },
+    { id: 'duplicates', label: '🔍 Doublons', roles: ['MODERATEUR', 'ADMIN', 'SUPER_ADMIN'] },
+    { id: 'staff', label: '👔 Gérer Staff', roles: ['ADMIN', 'SUPER_ADMIN'] },
+    { id: 'liststaff', label: '👥 Liste Staff', roles: ['ADMIN', 'SUPER_ADMIN'] },
+    { id: 'createclient', label: '➕ Créer Client', roles: ['ADMIN', 'SUPER_ADMIN'] },
+    { id: 'settings', label: '⚙️ Paramètres', roles: ['ADMIN', 'SUPER_ADMIN'] }
   ];
+
+  // Filtrer les onglets selon le rôle de l'utilisateur
+  const tabs = allTabs.filter(tab => tab.roles.includes(user?.role || 'MODERATEUR'));
 
   useEffect(() => {
     loadStats();
@@ -62,8 +68,10 @@ export default function AdminDashboard() {
         return <StaffSection />;
       case 'liststaff':
         return <ListStaffSection />;
+      case 'createclient':
+        return <CreateClientSection />;
       case 'settings':
-        return <SettingsSection isSuperAdmin={user?.role === 'SUPER_ADMIN'} />;
+        return <SettingsSection isAdmin={user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'} isSuperAdmin={user?.role === 'SUPER_ADMIN'} />;
       default:
         return null;
     }
