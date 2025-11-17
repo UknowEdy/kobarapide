@@ -14,7 +14,7 @@ const UserSchema = new mongoose.Schema({
     selfieIdUrl: { type: String }, // Selfie avec ID - TTL 30 jours
     selfieIdUploadedAt: { type: Date }, // Timestamp pour le TTL
     score: { type: Number, default: 0 },
-    status: { type: String, enum: ['EN_ATTENTE', 'ACTIF', 'SUSPENDU', 'BLOQUE', 'REACTIVATION_EN_ATTENTE', 'INACTIF_EXCLU', 'EN_VERIFICATION_DOUBLON', 'REJETE'], default: 'EN_ATTENTE' },
+    status: { type: String, enum: ['EN_ATTENTE', 'ACTIF', 'SUSPENDU', 'BLOQUE', 'REACTIVATION_EN_ATTENTE', 'INACTIF_EXCLU', 'EN_VERIFICATION_DOUBLON', 'REJETE', 'COMPTE_SUPPRIME'], default: 'EN_ATTENTE' },
     role: { type: String, enum: ['CLIENT', 'MODERATEUR', 'ADMIN', 'SUPER_ADMIN'], default: 'CLIENT' },
     codeParrainage: { type: String },
     parrainPar: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -24,6 +24,8 @@ const UserSchema = new mongoose.Schema({
     dateDerniereActivite: { type: Date, default: Date.now },
     nombrePretsRembourses: { type: Number, default: 0 },
     rejectionReason: { type: String },
+    deletionReason: { type: String }, // Raison de la suppression du compte
+    deletedAt: { type: Date }, // Date de suppression du compte
 }, { timestamps: true });
 
 // TTL Index pour selfieIdUrl - expire après 30 jours (2592000 secondes)
