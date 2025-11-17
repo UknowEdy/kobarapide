@@ -51,52 +51,78 @@ export default function ClientDashboard() {
 
   const handleLoanRequest = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log('\n🚀 ===== SOUMISSION DEMANDE DE PRÊT =====');
+
     const formData = new FormData(e.currentTarget);
     const montant = Number(formData.get('montant'));
+    const raison = formData.get('raison');
     const score = loggedInUser?.score || 0;
     const maxMontant = getMaxLoanAmount(score);
 
+    console.log('📊 Données du formulaire:');
+    console.log('  - Montant:', montant);
+    console.log('  - Raison:', raison);
+    console.log('  - Score utilisateur:', score);
+    console.log('  - Max autorisé:', maxMontant);
+    console.log('  - User ID:', loggedInUser?._id);
+
     // Validation : montant doit être un multiple de 5000
     if (montant % 5000 !== 0) {
+      console.log('❌ Validation échouée: montant pas un multiple de 5000');
       alert('⚠️ Le montant doit être un multiple de 5 000 F');
       return;
     }
 
     // Validation : montant ne doit pas dépasser le maximum autorisé
     if (montant > maxMontant) {
+      console.log('❌ Validation échouée: montant dépasse le maximum');
       alert(`⚠️ Votre score (${score}) permet un prêt maximum de ${maxMontant.toLocaleString()} F`);
       return;
     }
 
     try {
       const token = localStorage.getItem('token');
+      console.log('🔑 Token présent:', token ? 'Oui' : 'Non');
+
+      const payload = {
+        userId: loggedInUser?._id,
+        montant: montant,
+        raison: raison
+      };
+
+      console.log('📦 Payload envoyé:', payload);
+      console.log('🌐 URL:', `${API_URL}/api/loans`);
+
       const response = await fetch(`${API_URL}/api/loans`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-auth-token': token || ''
         },
-        body: JSON.stringify({
-          userId: loggedInUser?._id,
-          montant: montant,
-          raison: formData.get('raison')
-        })
+        body: JSON.stringify(payload)
       });
 
+      console.log('📡 Statut réponse:', response.status, response.statusText);
+
       const data = await response.json();
+      console.log('📨 Réponse serveur:', data);
 
       if (response.ok) {
+        console.log('✅ Demande créée avec succès!');
         alert('✅ Demande de prêt soumise avec succès!');
         e.currentTarget.reset();
         setLoanAmount(5000); // Reset au montant par défaut
         setShowDemandePret(false);
         fetchMyLoans();
       } else {
+        console.log('❌ Erreur retournée par le serveur:', data.msg);
         alert(`❌ ${data.msg || 'Erreur lors de la demande'}`);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('❌ ERREUR CATCH:', error);
       alert('❌ Erreur serveur');
+    } finally {
+      console.log('========================================\n');
     }
   };
 
@@ -128,7 +154,7 @@ export default function ClientDashboard() {
             >
               {darkMode ? '☀️' : '🌙'}
             </button>
-            
+
             {/* View Toggle */}
             <div className="flex gap-2 text-sm">
               <span className={`px-3 py-1 rounded ${darkMode ? 'bg-blue-600' : 'bg-blue-500'} text-white cursor-pointer`}>
@@ -197,22 +223,22 @@ export default function ClientDashboard() {
           <div className="lg:col-span-2">
             <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-lg shadow`}>
               <h3 className="text-xl font-bold mb-4">Prêts en Cours</h3>
-              
+
               {activeLoan ? (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{activeLoan.raison || 'Achat matériel'}</span>
                     <span className="font-bold">{activeLoan.montant?.toLocaleString()}F</span>
                   </div>
-                  
+
                   {/* Progress Bar */}
                   <div className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-2`}>
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full"
                       style={{ width: `${activeLoan.montantRembourse / activeLoan.montant * 100 || 0}%` }}
                     ></div>
                   </div>
-                  
+
                   <div className="flex justify-between text-sm">
                     <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
                       {activeLoan.montantRembourse || 0}% remboursé
@@ -231,7 +257,7 @@ export default function ClientDashboard() {
             {/* Loan History */}
             <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-lg shadow mt-6`}>
               <h3 className="text-xl font-bold mb-4">Historique des Prêts</h3>
-              
+
               {loanHistory.length > 0 ? (
                 <table className="w-full">
                   <thead>
@@ -267,18 +293,18 @@ export default function ClientDashboard() {
           <div className="space-y-4">
             <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-lg shadow`}>
               <h3 className="text-xl font-bold mb-4">Actions Rapides</h3>
-              
+
               <button
                 onClick={() => setShowDemandePret(true)}
                 className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg mb-3"
               >
                 Faire une demande de prêt
               </button>
-              
+
               <button className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} font-bold py-3 rounded-lg mb-3`}>
                 Voir mes statistiques
               </button>
-              
+
               <button className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-lg">
                 Partager mon code
               </button>
