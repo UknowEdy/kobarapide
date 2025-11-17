@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchGET, fetchPOST } from '../../../utils/api';
+import { fetchGET, fetchPOST, getCurrentUser } from '../../../utils/api';
 
 interface StaffMember {
   _id: string;
@@ -11,6 +11,9 @@ interface StaffMember {
 }
 
 const StaffSection: React.FC = () => {
+  const currentUser = getCurrentUser();
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
+
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -200,8 +203,13 @@ const StaffSection: React.FC = () => {
                 className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600"
               >
                 <option value="MODERATEUR">MODERATEUR</option>
-                <option value="ADMIN">ADMIN</option>
+                {isSuperAdmin && <option value="ADMIN">ADMIN</option>}
               </select>
+              {!isSuperAdmin && (
+                <p className="text-xs text-gray-400 mt-1">
+                  ℹ️ Seul un SUPER_ADMIN peut créer un compte ADMIN
+                </p>
+              )}
             </div>
 
             <div className="md:col-span-2">

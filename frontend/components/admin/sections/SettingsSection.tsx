@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { logout } from '../../../utils/api';
 
-const SettingsSection = ({ isSuperAdmin }: { isSuperAdmin: boolean }) => {
+const SettingsSection = ({ isAdmin, isSuperAdmin }: { isAdmin: boolean; isSuperAdmin: boolean }) => {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -10,11 +10,12 @@ const SettingsSection = ({ isSuperAdmin }: { isSuperAdmin: boolean }) => {
   const API_URL = import.meta.env.VITE_API_URL || 'https://kobarapide.onrender.com';
 
   // Charger l'état actuel au montage
+  // ADMIN et SUPER_ADMIN peuvent voir le mode maintenance
   useEffect(() => {
-    if (isSuperAdmin) {
+    if (isAdmin) {
       loadMaintenanceStatus();
     }
-  }, [isSuperAdmin]);
+  }, [isAdmin]);
 
   const loadMaintenanceStatus = async () => {
     try {
@@ -84,8 +85,8 @@ const SettingsSection = ({ isSuperAdmin }: { isSuperAdmin: boolean }) => {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-white">Paramètres Système</h2>
 
-      {/* Section Mode Maintenance - Visible uniquement pour SUPER_ADMIN */}
-      {isSuperAdmin && (
+      {/* Section Mode Maintenance - Visible pour ADMIN et SUPER_ADMIN */}
+      {isAdmin && (
         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -151,7 +152,7 @@ const SettingsSection = ({ isSuperAdmin }: { isSuperAdmin: boolean }) => {
             </p>
             <ul className="text-xs text-gray-400 mt-2 space-y-1 ml-4">
               <li>• Les clients voient une page "Site en maintenance"</li>
-              <li>• Vous (Super Admin) gardez l'accès à l'administration</li>
+              <li>• Vous (Admin) gardez l'accès à l'administration</li>
               <li>• L'API reste accessible pour le monitoring</li>
               <li>• Le changement est instantané et persistant</li>
             </ul>

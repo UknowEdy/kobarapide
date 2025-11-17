@@ -30,7 +30,8 @@ router.delete('/clear-all-users', [auth, superAdminOnly], async (req, res) => {
 });
 
 // GET - Vérifier l'état actuel de la maintenance
-router.get('/maintenance-status', [auth, superAdminOnly], async (req, res) => {
+// ADMIN et SUPER_ADMIN peuvent voir le statut
+router.get('/maintenance-status', [auth, adminAuth], async (req, res) => {
     try {
         // Chercher la config dans la DB
         let config = await AppConfig.findOne();
@@ -54,7 +55,8 @@ router.get('/maintenance-status', [auth, superAdminOnly], async (req, res) => {
 });
 
 // POST - Activer/Désactiver la maintenance
-router.post('/toggle-maintenance', [auth, superAdminOnly], async (req, res) => {
+// ADMIN et SUPER_ADMIN peuvent activer/désactiver
+router.post('/toggle-maintenance', [auth, adminAuth], async (req, res) => {
     try {
         const { enable } = req.body;
 
